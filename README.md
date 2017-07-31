@@ -17,6 +17,8 @@ cd poetryclub-backend
 
 composer install 
 
+php artisan migration
+
 chmod -R 777 storage
 
 /**
