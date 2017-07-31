@@ -1,0 +1,666 @@
+<?php
+
+namespace App\Repositories\Eloquent;
+
+use App\Repositories\Contracts\ApiRepositoryInterface;
+use App\Repositories\Contracts\RepositoryInterface;
+use Illuminate\Container\Container as App;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+
+/**
+ * Repository 抽象类
+ *
+ * Class Repository
+ * @package App\Repositories\Eloquent
+ */
+abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
+{
+    /**
+     * @var
+     */
+    private $app;
+    /**
+     * @var
+     */
+    protected $model;
+    /**
+     * @var int
+     */
+    protected $statusCode = 200;
+
+    /**
+     * 依赖注入 Container与创建模型
+     *
+     * Repository constructor.
+     * @param $app
+     */
+    public function __construct(App $app)
+    {
+        $this->app = $app;
+        $this->makeModel();
+    }
+
+    /**
+     * 指定模型名称
+     *
+     * @return mixed
+     */
+    abstract function model();
+
+    /**
+     * 根据模型名创建Eloquent ORM 实例
+     *
+     * @return bool|\Illuminate\Database\Eloquent\Builder
+     */
+    public function makeModel()
+    {
+        $model = $this->app->make($this->model());
+        if (!$model instanceof Model) {
+            return false;
+        }
+        return $this->model = $model;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 数据库相关
+    |--------------------------------------------------------------------------
+    |
+    | 含有数据库的CRUD操作,分页等
+    |
+    |
+    */
+
+    /**
+     * 根据主键查找数据
+     *
+     * @param $id
+     * @param array $columns
+     * @return mixed
+     */
+    public function find($id, $columns = array('*'))
+    {
+        return $this->model->find($id, $columns);
+    }
+
+    /**
+     * 根据指定键与值查找数据
+     *
+     * @param $attribute
+     * @param $value
+     * @param array $columns
+     * @return mixed
+     */
+    public function findBy($attribute, $value, $columns = array('*'))
+    {
+        return $this->model->where($attribute, '=', $value)->first($columns);
+    }
+
+    /**
+     * 获取所有数据
+     *
+     * @param array $columns
+     * @return mixed
+     */
+    public function all($columns = array('*'))
+    {
+        return $this->model->get($columns);
+    }
+
+    /**
+     * 预加载
+     *
+     * @param $relations
+     * @return mixed
+     */
+    public function with($relations)
+    {
+        return $this->model->with(is_string($relations) ? func_get_args() : $relations);
+    }
+
+    /**
+     * 批量创建
+     *
+     * @param array $data
+     * @return mixed
+     */
+    public function create(array $data)
+    {
+        return $this->model->create($data);
+    }
+
+    /**
+     * 根据主键更新
+     *
+     * @param array $data
+     * @param $id
+     * @param string $attribute
+     * @return mixed
+     */
+    public function update(array $data, $id, $attribute = 'id')
+    {
+        return $this->model->where($attribute, '=', $id)->update($data);
+    }
+
+    /**
+     * 根据主键删除数据
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function delete($id)
+    {
+        return $this->model->destroy($id);
+    }
+
+    /**
+     * 获取分页数据
+     *
+     * @param int $perPage
+     * @param array $columns
+     * @return mixed
+     */
+    public function paginate($perPage = 10, $columns = array('*'))
+    {
+        return $this->model->paginate($perPage, $columns);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | API相关
+    |--------------------------------------------------------------------------
+    |
+    |
+    |
+    |
+    */
+
+    /**
+     * 获取状态码
+     *
+     * @return int
+     */
+    public function getStatusCode()
+    {
+        return $this->statusCode;
+    }
+
+    /**
+     * 设置状态码
+     *
+     * @param $statusCode
+     * @return $this
+     */
+    public function setStatusCode($statusCode)
+    {
+        $this->statusCode = $statusCode;
+        return $this;
+    }
+
+    /**
+     * 根据数据类型来产生响应
+     *
+     * @param $data
+     * @param array $headers
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function respondWith($data, array $headers = [])
+    {
+        if (!$data) {
+            return $this->errorNotFound('Requested response not found。');
+        } elseif ($data instanceof Collection || $data instanceof LengthAwarePaginator || $data instanceof Model) {
+            return $this->respondWithItem($data, $headers);
+        } elseif (is_string($data) || is_array($data)) {
+            return $this->respondWithArray($data, $headers);
+        } else {
+            return $this->errorInternalError();
+        }
+    }
+
+    /**
+     * 产生响应并处理Collection对象或Eloquent模型
+     *
+     * @param $item
+     * @param array $headers
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function respondWithItem($item, array $headers = [])
+    {
+        $response = response()->json($item->toArray(), $this->statusCode, $headers);
+        return $response;
+    }
+
+    /**
+     * 产生响应并处理数组或字符串
+     *
+     * @param array $array
+     * @param array $headers
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function respondWithArray(array $array, array $headers = [])
+    {
+        $response = response()->json($array, $this->statusCode, $headers);
+        return $response;
+    }
+
+    /**
+     * 产生响应并且返回错误
+     *
+     * @param $message
+     * @param $errorCode
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function respondWithError($message, $errorCode)
+    {
+        return $this->respondWithArray([
+            'error' => [
+                'code' => $errorCode,
+                'http_code' => $this->statusCode,
+                'message' => $message
+            ]
+        ]);
+    }
+
+    /**
+     * 请求不允许
+     *
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function errorForbidden($message = 'Forbidden')
+    {
+        return $this->setStatusCode(403)->respondWithError($message, self::CODE_FORBIDDEN);
+    }
+
+    /**
+     * 服务器内部产生错误
+     *
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function errorInternalError($message = "Internal Error")
+    {
+        return $this->setStatusCode(500)->respondWithError($message, self::CODE_INTERNAL_ERROR);
+    }
+
+    /**
+     * 没有找到指定资源
+     *
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function errorNotFound($message = 'Resource Not Found')
+    {
+        return $this->setStatusCode(404)->respondWithError($message, self::CODE_NOT_FOUND);
+    }
+
+    /**
+     * 请求授权失败
+     *
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function errorUnauthorized($message = "Unauthorized")
+    {
+        return $this->setStatusCode(401)->respondWithError($message, self::CODE_UNAUTHORIZED);
+    }
+
+    /**
+     * 请求错误
+     *
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function errorWrongArgs($message = 'Wrong Arguments')
+    {
+        return $this->setStatusCode(400)->respondWithError($message, self::CODE_WRONG_ARGS);
+    }
+
+    /**
+     * 无法处理的请求实体
+     *
+     * @param string $message
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function errorUnprocessableEntity($message = "Unprocessable Entity")
+    {
+        return $this->setStatusCode(422)->respondWithError($message, self::CODE_UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * 自定义验证数据
+     *
+     * @param Request $request
+     * @param array $rules
+     * @param array $messages
+     * @param array $customAttributes
+     * @return mixed|void
+     */
+    public function validate(Request $request, array $rules, array $messages = [], array $customAttributes = [])
+    {
+        Validator::make($request->all(), $rules, $messages, $customAttributes)->validate();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | 杂项
+    |--------------------------------------------------------------------------
+    |
+    | 
+    |
+    |
+    */
+    /**
+     * 格式化时间
+     *
+     * @param $date
+     * @return mixed
+     */
+    public function transformTime($date)
+    {
+        return \Carbon\Carbon::parse($date)->diffForHumans();
+    }
+
+    /**
+     * 获取用户的昵称
+     *
+     * @param $user
+     * @return mixed
+     */
+    public function getNickname($user)
+    {
+        return array_get($user, 'profile.nickname') ?: $user['name'];
+    }
+
+    /**
+     * 格式化个人信息
+     *
+     * @param $user
+     * @param bool $owns
+     * @return mixed
+     */
+    public function transformUser($user, $owns = false)
+    {
+        $user = collection($user);
+        // 是否为个人信息所有者
+        $user = !$owns ? $user->except('email', 'mobile', 'confirmation_token') : $user;
+        // 如果有个人信息
+        if ($user->has('profile')) {
+            $profile = collection($user->get('profile'))->except('id', 'user_id', 'nickname', 'created_at', 'updated_at');
+            if ($profile->get('gender')) {  // 若设置了性别,格式化 gender
+                $profile['gender'] = $profile['gender'] === 1 ? '男' : '女';
+            } else {
+                $profile['gender'] = '';
+            }
+            // 设置 profile 地址链接
+            $user['profileUrl'] = '/user/' . $user['name'];
+            // 设置昵称
+            $user['name'] = $this->getNickname($user);
+            return $user
+                ->merge($profile)
+                ->forget('profile');
+        }
+        return $user;
+    }
+
+    /**
+     * 格式化评论信息
+     *
+     * @param $comments
+     * @return mixed
+     */
+    public function transformComment($comments)
+    {
+        // 如果评论为空,则返回 nul
+        if (empty($comments)) {
+            return null;
+        }
+        $comments = collection($comments);
+        return $comments->map(function ($comment) {
+            // 格式化评论的发布时间
+            $comment['publish_time'] = $this->transformTime($comment['created_at']);
+
+            // 设置 profile 地址链接与用户昵称
+            $user['profileUrl'] = '/user/' . $comment['user']['name'];
+            $user['avatar'] = $comment['user']['avatar'];
+            $user['name'] = $this->getNickname($comment['user']);
+
+            // 若为回复评论,则获取被回复者的个人信息
+            $parent = null;
+            if ($parent_id = $comment['parent_id']) {
+                $ori_parent = (new \App\Http\Frontend\Models\User())
+                    ->with('profile')
+                    ->find($parent_id);
+                $parent['profileUrl'] = '/user/' . $ori_parent['name'];
+                $parent['name'] = $this->getNickname($ori_parent);
+            }
+
+            return collection($comment)
+                ->merge($user)
+                ->merge(['parent' => $parent])
+                ->forget('user');
+        });
+
+    }
+
+    /**
+     * 获取指定模型的所有评论
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function getModelCommentsById($id)
+    {
+        return $this->transformComment($this->with('comments.user')->find($id)->comments);
+    }
+
+    /**
+     * 格式化模型信息
+     *
+     * @param $model
+     * @return mixed
+     */
+    public function transformModel($model)
+    {
+        // 设置作品的 Date 格式的发表时间
+        $model['publish_time'] = $this->transformTime($model['created_at']);
+        $model = collection($model);
+        $user = $this->transformUser($model['user']);
+
+        if ($user->has('poems')) {     // 如果该用户有作品
+            $works = collection($user['poems'])->map(function ($work) {
+                // 设置作品的地址链接和名字
+                $work['poemUrl'] = '/poem/' . $work['id'];
+                $work['poemName'] = $work['title'];
+                $work['publish_time'] = $this->transformTime($work['created_at']);
+                return collection($work)
+                    ->only('poemUrl', 'poemName', 'publish_time');
+            });
+            $user = $user
+                ->merge(['works' => $works])
+                ->forget('poems');
+        };
+        if ($model->has('comments')) {
+            $model['comments'] = $this->transformComment($model['comments']);
+        }
+
+        // 获取分类名
+        $model['category'] = \App\Http\Frontend\Models\Category::find($model['category_id'])->name;
+
+        return $model
+            ->prepend($user['profileUrl'], 'profileUrl')//设置作者个人主页地址
+            ->prepend($user['name'], 'authorName')// 设置作者昵称
+            ->prepend('/poem/' . $model['id'], 'poemUrl')// 设置作品地址链接
+            ->merge(['user' => $user]);
+    }
+
+    /**
+     * 格式化模型集合
+     *
+     * @param $models
+     * @return mixed
+     */
+    public function transformModels($models)
+    {
+        // 如果用户已经登录
+        if (check()) {
+            return $models->map(function ($item) {
+                $data = $this->transformModel($item);
+                // 点赞状态
+                $data['voted'] = $item->voted($id = id());
+                // 收藏状态
+                $data['favored'] = $item->favored($id);
+                return $data;
+            });
+        }
+        return $models->map(function ($item) {
+            return $this->transformModel($item);
+        });
+    }
+
+    /**
+     * 切换动作状态
+     *
+     * @param $id
+     * @param Model $model
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function toggleAction($id, Model $model)
+    {
+        // 动作次数 与 返回信息
+        $cnt = null;
+        $info = null;
+        // 查询指定ID的模型信息
+        $data = $this->find($id);
+        // 如果 model 没有相关用户的数据,则新建之。反之,则返回该模型
+        $model = $model->firstOrCreate(['user_id' => id()]);
+        // attached 与 detached 数组
+        if ($model instanceof \App\Http\Frontend\Models\Vote) {
+            // 点赞模型
+            $toggle = $data->toggleVote($model->id);
+            $cnt = 'likes_count';
+            $info = 'voted';
+        } elseif ($model instanceof \App\Http\Frontend\Models\Favorite) {
+            // 收藏模型
+            $toggle = $data->toggleFavorite($model->id);
+            $cnt = 'favorites_count';
+            $info = 'favored';
+        }
+        // 如果是 attached 行为,则给该目标的总数 +1
+        if (!empty($toggle['attached'])) {
+            $data->increment($cnt);
+            return $this->respondWith([$info => true]);
+        }
+        // 反之则 -1
+        $data->decrement($cnt);
+        return $this->respondWith([$info => false]);
+    }
+
+    /**
+     * 获取动作状态
+     *
+     * @param $id
+     * @param $action
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function getActionStatus($id, $action)
+    {
+        $value = null;
+        if ($action === 'voted') {   // 点赞
+            $value = $this->find($id)->voted(id());
+        } elseif ($action === 'favored') {     // 收藏
+            $value = $this->find($id)->favored(id());
+        } elseif ($action === 'rated') {   //评分
+            $rating = collection($this->find($id)->rated(id()))
+                ->only(['rating_1', 'rating_2', 'rating_3', 'rating_4', 'rating_5'])
+                ->filter(function ($item) {
+                    return !!$item;
+                })
+                ->toArray();
+            $value = rating($rating);
+        }
+        return $this->respondWith([$action => $value]);
+    }
+
+    /**
+     * 根据指定类型获取模型名
+     *
+     * @param $type
+     * @return string
+     */
+    public function getModelNameFormType($type)
+    {
+        if ($type === 'poem') {
+            return 'App\Http\Frontend\Models\Poem';
+        } elseif ($type === 'appreciation') {
+            return 'App\Http\Frontend\Models\Appreciation';
+        } elseif ($type === 'user') {
+            return 'App\Http\Frontend\Models\User';
+        }
+    }
+
+    /**
+     * 标准化模型
+     *
+     * @param $id
+     * @param $name
+     * @param string $type
+     */
+    public function normalizeModelCount($id, $name, $type = 'comments_count')
+    {
+        $model = null;
+        if ($name === 'App\Http\Frontend\Models\Poem') {
+            // 如果该模型为诗文模型,则该诗文模型的评论总数 +1
+            $model = (new \App\Http\Frontend\Models\Poem());
+        } elseif ($name === 'App\Http\Frontend\Models\Appreciation') {
+            $model = (new \App\Http\Frontend\Models\Appreciation());
+        } else if ($name === 'App\Http\Frontend\Models\User') {
+            $model = (new \App\Http\Frontend\Models\User());
+        }
+        $model && $model->find($id)->increment($type);
+    }
+
+    /**
+     * 获取评分
+     *
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function getRatingsById($id)
+    {
+        // 获取评分总数
+        $ratings = collection($this->find($id)->ratings)->map(function ($item) {
+            return collection($item)
+                ->only(['rating_1', 'rating_2', 'rating_3', 'rating_4', 'rating_5'])
+                ->filter(function ($score) {
+                    return !!$score;
+                });
+        });
+        // 获取 四舍五入小数点后一位 的平均分值
+        $score = $ratings->avg(function ($item) {
+            // 格式化评分
+            return rating($item->toArray());
+        });
+        return $this->respondWith(['rating' => round($score, 1)]);
+    }
+
+    /**
+     * 检索搜索内容
+     *
+     * @param $search
+     * @return mixed
+     */
+    public function scout($search)
+    {
+        /*return $this->model->search($search)->get()
+            ->map(function ($item) {
+                return $this->transformModel($item->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+                    $query->orderBy('comments.created_at', 'desc');
+                }])->find($item['id']));
+            });*/
+    }
+}

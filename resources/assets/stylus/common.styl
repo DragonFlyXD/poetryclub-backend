@@ -1,0 +1,136 @@
+@import './mixins'
+
+/* 自定义 a 标签 */
+.custom-a
+  display inline-block
+  text-decoration none
+  color Green
+  transition color .15s
+  &:hover
+    color Light-Orange
+
+/* 自定义 checkbox 标签 */
+.custom-checkbox
+  color Green
+  &:hover, &:focus
+    .el-checkbox__inner
+      border-color Green
+  .is-checked .el-checkbox__inner
+    border-color Green
+    background-color Green
+
+/* 自定义 button 标签 */
+.custom-btn
+  width 100%
+  border 0 !important
+  bc(Green !important, White !important)
+  transition all .15s
+  &:hover,&:focus
+    bc(Orange !important, White !important)
+
+.custom-confirm
+  bc(Green, White)
+  border-color Green
+  transition all .15s
+  &:hover,&:focus
+    bc(Orange, White)
+    border-color Orange
+
+.custom-cancel
+  bc(White,Light-Silver)
+  transition all .15s
+  &:hover,&:focus
+    border-color Light-Silver
+    color Silver
+
+/* 自定义 input 标签 */
+.custom-ipt
+  i
+    &:hover
+      color Green !important
+      & + input
+        border-color Green !important
+  input
+    color Green
+    &:hover, &:focus
+      border-color Green
+    &::placeholder
+      font-size .8em
+      color Extra-Light-Silver
+
+/* 自定义 <element>form组件 */
+.custom-form
+  input, textarea
+    color Green
+    &:hover, &:focus
+      border-color Green
+    &::placeholder
+      font-size .8em
+  button
+    font-size .8em
+    color Silver
+    transition all .2s
+    &:hover
+      border-color Green
+      color Green
+  .is-error input, .is-error textarea
+    border-color Red !important
+  .el-form-item__error
+    color Red
+  .el-form-item__label
+    &::before
+      content '' !important
+
+/* 自定义<element>popper组件 */
+.custom-popper
+  li
+    color Silver
+    &:hover
+      bc()
+
+/* 自定义 quill 组件 */
+.custom-quill
+  .ql-editor
+    min-height 300px
+    border 1px solid Extra-Light-Silver
+    border-radius 5px
+    color Green
+
+/* 自定义 <element>message组件 */
+.custom-msg
+  p
+    color Blank
+
+/* 自定义 <element>dialog组件 */
+.custom-dialog
+  .el-dialog__headerbtn
+    &:hover,&:focus
+        &>i
+          color Green
+
+.el-message-box
+  .el-message-box__close
+    &:hover
+      color Green
+
+/* <element>dropdown组件 */
+.el-dropdown-menu
+  font-size .8em
+  a
+    text-decoration none
+  .el-dropdown-menu__item
+    color Green
+    &:hover
+      bc(Green, White)
+    & > i
+      margin-right 5px
+
+/* <element>checkbox组件 */
+.el-checkbox
+  .is-checked .el-checkbox__inner
+    border-color Green
+    background-color Green
+  .el-checkbox__inner
+    &:hover
+      border-color Green
+

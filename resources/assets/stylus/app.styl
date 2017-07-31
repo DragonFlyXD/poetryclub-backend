@@ -1,0 +1,113 @@
+@import "common"
+
+body, html
+  height 100%
+  margin 0
+  padding 0
+  font-family 'monaco', 'menlo', serif, sans-serif
+  font-size 16px
+  background-color #fff
+
+#app
+  height 100%
+
+/* login */
+.df-login
+  fj(center, center)
+  height 100%
+  background-color Black
+
+/* header */
+.df-header
+  fj(space-between)
+  height 50px
+  padding 0 20px
+  line-height 50px
+  bc(Green, White)
+  .logo
+    & > a
+      text-decoration none
+      color White
+  .user
+    fj(flex-start, center)
+    .name
+      position relative
+      margin 0 30px 0 20px
+      text-shadow 1px 1px 1px hsla(100, 0%, 50%, 1)
+      color Black
+      &::before
+        position absolute
+        top 0
+        left -15px
+        color White
+        content '\201C'
+      &::after
+        position absolute
+        top 0
+        right -15px
+        color White
+        content '\201D'
+    .menu
+      height 50px
+      overflow hidden
+      .avatar
+        wh(40px, 40px)
+        margin-top 5px
+        border-radius 40px
+        cursor pointer
+
+/* main */
+.df-main
+  fj()
+  height 100%
+
+/* nav */
+.df-nav
+  height 100%
+  a
+    text-decoration none
+    .is-active
+      color Green
+    i
+      margin-right 5px
+      color Green
+
+/* content */
+.df-content
+  width 100%
+  padding 20px
+  .breadcrumb
+    margin-bottom 20px
+    a:hover
+      color Orange !important
+
+/* user */
+.df-user-wrapper
+  .avatar-wrapper
+    position absolute
+    top 20%
+    left 20%
+    .avatar
+      wh(200px, 200px)
+      border-radius 200px
+      box-shadow 0 1px 1px rgba(0, 0, 0, .2)
+      cursor pointer
+  .df-user
+    display flex
+    flex-direction column
+    .item
+      margin 0 auto
+      padding 10px 0
+      label
+        padding 10px
+        border 1px solid #ddd
+        border-radius 5px
+        color Silver
+      p
+        display inline-block
+        margin 0
+        padding 10px
+        border-bottom 1px dashed Light-Green
+        color Green
+        .default
+          color Orange

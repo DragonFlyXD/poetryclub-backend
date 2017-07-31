@@ -1,0 +1,55 @@
+@import '../../../stylus/common'
+
+.df-table
+  .header
+    fj(space-between)
+    padding 0 20px
+    margin-bottom 20px
+    .search
+      width 300px
+    .actions
+      button
+        margin-left 20px
+        border 0
+        border-radius 5px
+        color White
+        &:hover
+          animation rotateBtn .5s cubic-bezier(1, .5, .8, 1)
+      .add
+        background-color Blue
+      .edit
+        background-color Light-Green
+      .destroy
+        background-color Light-Orange
+      .refresh
+        background-color Red
+  .main
+    color Silver
+    width 100%
+    .actions .cell
+      fj(center)
+      button
+        padding 10px
+        wh(30px, 30px)
+        border-radius 30px
+        text-align center
+    .expand-table
+      fj()
+      .el-form-item
+        width 100%
+        margin-right 0
+        margin-bottom 0
+
+@keyframes rotateBtn
+  16%
+    border-radius 7px
+  33%
+    border-radius 10px
+    transform rotateZ(-75deg)
+  50%
+    border-radius 20px
+    font-size 1em
+  77%
+    transform rotateZ(75deg)
+  100%
+    border-radius 5px
