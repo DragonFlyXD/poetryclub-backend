@@ -380,31 +380,29 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
      * 格式化个人信息
      *
      * @param $user
-     * @param bool $owns
+     * @param $other
      * @return mixed
      */
-    public function transformUser($user, $owns = false)
+    public function transformUser($user, $other = false)
     {
         $user = collection($user);
-        // 是否为个人信息所有者
-        $user = !$owns ? $user->except('email', 'mobile', 'confirmation_token') : $user;
-        // 如果有个人信息
-        if ($user->has('profile')) {
-            $profile = collection($user->get('profile'))->except('id', 'user_id', 'nickname', 'created_at', 'updated_at');
-            if ($profile->get('gender')) {  // 若设置了性别,格式化 gender
-                $profile['gender'] = $profile['gender'] === 1 ? '男' : '女';
-            } else {
-                $profile['gender'] = '';
-            }
-            // 设置 profile 地址链接
-            $user['profileUrl'] = '/user/' . $user['name'];
-            // 设置昵称
-            $user['name'] = $this->getNickname($user);
-            return $user
-                ->merge($profile)
-                ->forget('profile');
+        $user = $user->except('confirmation_token');
+
+        $profile = collection($user->get('profile'))->except('id', 'user_id', 'nickname', 'created_at', 'updated_at');
+        if ($profile->get('gender')) {  // 若设置了性别,格式化 gender
+            $profile['gender'] = $profile['gender'] === 1 ? '男' : '女';
+        } else {
+            $profile['gender'] = '';
         }
-        return $user;
+
+        // 设置 profile 地址链接
+        $user['profileUrl'] = '/user/' . $user['name'];
+        // 设置昵称
+        $user['nickname'] = $this->getNickname($user);
+
+        return $other
+            ? $user
+            : $user->merge($profile)->forget('profile');
     }
 
     /**
@@ -427,7 +425,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             // 设置 profile 地址链接与用户昵称
             $user['profileUrl'] = '/user/' . $comment['user']['name'];
             $user['avatar'] = $comment['user']['avatar'];
-            $user['name'] = $this->getNickname($comment['user']);
+            $user['nickname'] = $this->getNickname($comment['user']);
 
             // 若为回复评论,则获取被回复者的个人信息
             $parent = null;
@@ -493,7 +491,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
 
         return $model
             ->prepend($user['profileUrl'], 'profileUrl')//设置作者个人主页地址
-            ->prepend($user['name'], 'authorName')// 设置作者昵称
+            ->prepend($user['nickname'], 'authorName')// 设置作者昵称
             ->prepend('/poem/' . $model['id'], 'poemUrl')// 设置作品地址链接
             ->merge(['user' => $user]);
     }
@@ -656,6 +654,14 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
      */
     public function scout($search)
     {
+        return $this->transformModels($this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+            $query->orderBy('comments.created_at', 'desc');
+        }])
+            ->where('title', 'like', "%$search%")
+            ->get())
+            ->sortByDesc('pageviews_count')
+            ->values()
+            ->all();
         /*return $this->model->search($search)->get()
             ->map(function ($item) {
                 return $this->transformModel($item->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {

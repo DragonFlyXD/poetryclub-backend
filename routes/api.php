@@ -33,9 +33,9 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
         // 获取用户数据
         Route::get('/', 'UserController@profile');
         // 关注用户
-        Route::post('follow', 'FollowerController@follow');
+        Route::post('follow', 'FollowController@follow');
         // 获取关注状态
-        Route::get('{user}/followed', 'FollowerController@followed');
+        Route::get('{user}/followed', 'FollowController@followed');
         // 更新头像
         Route::post('avatar', 'UserController@avatar');
         // 更新个人信息

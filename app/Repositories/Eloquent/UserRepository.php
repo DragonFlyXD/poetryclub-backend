@@ -51,7 +51,7 @@ class UserRepository extends Repository
         } else {
             // 若有查询参数
             $paginate = $this->model
-                ->where('name', 'like', '%' . $query . '%')
+                ->where('name', 'like', "%$query%")
                 ->paginate(10)
                 ->toArray();
         }
@@ -317,10 +317,15 @@ class UserRepository extends Repository
      */
     public function followers($user)
     {
-        $followers = collection($this->find($user)->followers);
-        return $followers->map(function ($item) {
-            return collection($item)
-                ->except('confirmation_token');
+        $followers = collection($this->findBy('name', $user)->followers);
+        $own = user();
+        return $followers->map(function ($item) use ($own) {
+            $item = collection($item)->merge(['profile' => $item->profile]);
+
+            // 获取关注状态
+            $item['followed'] = $own->followed($item['id']);
+
+            return $this->transformUser($item, true);
         });
     }
 
@@ -332,10 +337,15 @@ class UserRepository extends Repository
      */
     public function followings($user)
     {
-        $followings = collection($this->find($user)->followings);
-        return $followings->map(function ($item) {
-            return collection($item)
-                ->except('confirmation_token');
+        $followings = collection($this->findBy('name', $user)->followings);
+        $own = user();
+        return $followings->map(function ($item) use ($own) {
+            $item = collection($item)->merge(['profile' => $item->profile]);
+
+            // 获取关注状态
+            $item['followed'] = $own->followed($item['id']);
+
+            return $this->transformUser($item, true);
         });
     }
 
@@ -347,7 +357,7 @@ class UserRepository extends Repository
      */
     public function follow($user)
     {
-        if (id() !== $user) {
+        if (id() !== intval($user)) {
             // 关注者
             $follower = $this->find(id());
             $toggle = $follower->toggleFollow($user);

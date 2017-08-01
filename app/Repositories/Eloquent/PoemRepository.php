@@ -44,7 +44,7 @@ class PoemRepository extends Repository
         } else {
             // 若有查询参数
             $paginate = $this->model
-                ->where('title', 'like', '%' . $query . '%')
+                ->where('title', 'like', "%$query%")
                 ->paginate(10)
                 ->toArray();
         }
