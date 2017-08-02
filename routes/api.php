@@ -20,15 +20,20 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
     /* 社会化登录相关 */
     Route::get('oauth/github', 'AuthController@github');
     Route::get('oauth/github/callback', 'AuthController@githubCallback');
+
+    /* 首页相关 */
+    Route::get('home', 'HomeController@index');
+
     /* 用户相关 */
     // 用户注册、用户登录
     Route::post('user/register', 'UserController@register');
     Route::post('user/login', 'UserController@login');
     // 获取指定用户信息
     Route::get('user/{name}', 'UserController@show');
-    // 获取关注者列表、被关注者列表
+    // 获取关注者列表、粉丝列表、作品列表
     Route::get('user/{user}/followers', 'FollowController@followers');
     Route::get('user/{user}/followings', 'FollowController@followings');
+    Route::get('user/{user}/works', 'WorkController@index');
     Route::group(['prefix' => 'user', 'middleware' => 'auth:api'], function () {
         // 获取用户数据
         Route::get('/', 'UserController@profile');
