@@ -46,7 +46,8 @@ class RatingController extends Controller
      */
     public function poem($poem)
     {
-        return $this->poem->getRatingsById($poem);
+        $rating = $this->poem->getRatingsByModel($this->poem->find($poem));
+        return response()->json(['rating' => $rating]);
     }
 
     /**
@@ -68,7 +69,8 @@ class RatingController extends Controller
      */
     public function appreciation($appreciation)
     {
-        return $this->appreciation->getRatingsById($appreciation);
+        $rating = $this->appreciation->getRatingsByModel($this->appreciation->find($appreciation));
+        return response()->json(['rating' => $rating]);
     }
 
     /**

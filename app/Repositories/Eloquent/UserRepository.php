@@ -323,7 +323,7 @@ class UserRepository extends Repository
             $item = collection($item)->merge(['profile' => $item->profile]);
 
             // 获取关注状态
-            $item['followed'] = $own->followed($item['id']);
+            $item['followed'] = check() ? $own->followed($item['id']) : false;
 
             return $this->transformUser($item, true);
         });
@@ -343,10 +343,38 @@ class UserRepository extends Repository
             $item = collection($item)->merge(['profile' => $item->profile]);
 
             // 获取关注状态
-            $item['followed'] = $own->followed($item['id']);
+            $item['followed'] = check() ? $own->followed($item['id']) : false;
 
             return $this->transformUser($item, true);
         });
+    }
+
+    /**
+     * 获取指定用户的作品列表
+     *
+     * @param $user
+     * @return mixed
+     */
+    public function works($user)
+    {
+        $user = $this->with('profile')->where('name', $user)->first();
+
+        // 格式化作品数据
+        $poems = collection($user->poems)->map(function ($item) use ($user) {
+            $poem = (new \App\Http\Frontend\Models\Poem())->with(['tags', 'comments.user.profile', 'comments' => function ($query) {
+                $query->orderBy('comments.created_at', 'desc');
+            }])->find($item['id']);
+
+            $poem['user'] = $user;
+            return $poem;
+        });
+        $work['poem'] = $this->transformModels($poems)
+            ->sortByDesc('pageviews_count')
+            ->values()
+            ->all();
+
+        $work['author'] = $this->transformUser($user);
+        return $work;
     }
 
     /**

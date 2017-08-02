@@ -70,6 +70,43 @@ class PoemRepository extends Repository
     }
 
     /**
+     * 获取热门诗文
+     *
+     * @return mixed
+     */
+    public function hotPoems()
+    {
+        $poems = $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+            $query->orderBy('comments.created_at', 'desc');
+        }])->get();
+
+        // 热门诗文排序算法
+        $sortAlgorithm = function ($poem) {
+            // 点赞、分享、收藏、写赏析的总数
+            $meta = $poem['likes_count'] + $poem['shares_count'] + $poem['favorites_count'] + $poem['appreciations_count'];
+            // 诗文平均评分
+            $rating = $this->getRatingsByModel($poem);
+            return (log10($poem['pageviews_count']) * 4
+                + $meta / 5
+                + $poem['comments_count'] / 100)
+                + $rating
+            / ($poem['created_at']->timestamp / 3600);
+        };
+
+        $sortedPoems = $poems->sort(function ($a, $b) use ($sortAlgorithm) {
+            $a = $sortAlgorithm($a);
+            $b = $sortAlgorithm($b);
+
+            if ($a == $b) {
+                return 0;
+            }
+            return ($a > $b) ? -1 : 1;
+        });
+
+        return $this->transformModels($sortedPoems)->values()->take(20)->all();
+    }
+
+    /**
      * 存储诗文内容
      *
      * @param $request
@@ -172,7 +209,7 @@ class PoemRepository extends Repository
     {
         $userId = id() ?: id('web');
         // 若删除成功,作品总数 -1
-        if ($result = !!$this->delete($id)){
+        if ($result = !!$this->delete($id)) {
             (new \App\Http\Frontend\Models\User())->find($userId)->decrement('works_count');
         }
         return $this->respondWith(['deleted' => $result]);

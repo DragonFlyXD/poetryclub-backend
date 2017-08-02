@@ -434,7 +434,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
                     ->with('profile')
                     ->find($parent_id);
                 $parent['profileUrl'] = '/user/' . $ori_parent['name'];
-                $parent['name'] = $this->getNickname($ori_parent);
+                $parent['nickname'] = $this->getNickname($ori_parent);
             }
 
             return collection($comment)
@@ -623,15 +623,15 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
     }
 
     /**
-     * 获取评分
+     * 获取指定模型的评分
      *
-     * @param $id
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @param $model
+     * @return float
      */
-    public function getRatingsById($id)
+    public function getRatingsByModel($model)
     {
         // 获取评分总数
-        $ratings = collection($this->find($id)->ratings)->map(function ($item) {
+        $ratings = collection($model->ratings)->map(function ($item) {
             return collection($item)
                 ->only(['rating_1', 'rating_2', 'rating_3', 'rating_4', 'rating_5'])
                 ->filter(function ($score) {
@@ -643,7 +643,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             // 格式化评分
             return rating($item->toArray());
         });
-        return $this->respondWith(['rating' => round($score, 1)]);
+        return round($score, 1);
     }
 
     /**
