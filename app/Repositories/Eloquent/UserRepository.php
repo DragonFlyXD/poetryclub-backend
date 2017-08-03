@@ -117,7 +117,10 @@ class UserRepository extends Repository
         $user->confirmation_token = str_random(40);
         $user->save();
         // 初始化该用户的个人信息
-        (new \App\Http\Frontend\Models\Profile())->create(['user_id' => $user->id]);
+        (new \App\Http\Frontend\Models\Profile())->create([
+            'user_id' => $user->id,
+            'nickname' => $user->name
+        ]);
         return $this->respondWith(['verified' => true]);
     }
 
@@ -250,7 +253,7 @@ class UserRepository extends Repository
     }
 
     /**
-     * 查找指定用户名的用户
+     * 根据用户名查找用户
      *
      * @param $name
      * @return \Illuminate\Http\JsonResponse
@@ -259,6 +262,27 @@ class UserRepository extends Repository
     {
         return $this->transformUser($this->with('profile')->where('name', $name)->first())
             ?: $this->errorNotFound();
+    }
+
+    /**
+     * 根据昵称查找用户
+     *
+     * @param $nickname
+     * @return mixed
+     */
+    public function getUserByNickname($nickname)
+    {
+        if (!$nickname) return [];
+
+        $users = (new \App\Http\Frontend\Models\Profile())
+            ->with('user')
+            ->where('nickname', 'like', "%$nickname%")
+            ->get();
+
+        return $users->map(function ($user) {
+            $user['avatar'] = $user['user']['avatar'];
+            return collection($user)->forget('user');
+        });
     }
 
     /**

@@ -430,11 +430,12 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             // 若为回复评论,则获取被回复者的个人信息
             $parent = null;
             if ($parent_id = $comment['parent_id']) {
-                $ori_parent = (new \App\Http\Frontend\Models\User())
-                    ->with('profile')
+                $ori_parent = (new \App\Http\Frontend\Models\Comment())
+                    ->with('user.profile')
                     ->find($parent_id);
-                $parent['profileUrl'] = '/user/' . $ori_parent['name'];
-                $parent['nickname'] = $this->getNickname($ori_parent);
+                $parent['profileUrl'] = '/user/' . $ori_parent['user']['name'];
+                $parent['nickname'] = $this->getNickname($ori_parent['user']);
+                $parent['body'] = $ori_parent['body'];
             }
 
             return collection($comment)

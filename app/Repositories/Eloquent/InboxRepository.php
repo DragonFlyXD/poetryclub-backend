@@ -46,11 +46,12 @@ class InboxRepository extends Repository
         $allMessages = $this->transformMessages($messages);
         // 未读私信
         $unreadMessages = $allMessages->reject(function ($message) {
-            return !!$message['read_at'];
+            return id() === $message['from_user_id'] || !!$message['read_at'];
         });
         return $this->respondWith([
             'allMessages' => $allMessages,
-            'unreadMessages' => $unreadMessages
+            'unreadMessages' => $unreadMessages,
+            'unreadLength' => count($unreadMessages)
         ]);
     }
 
@@ -80,13 +81,13 @@ class InboxRepository extends Repository
         // 若有交流过,则使用同一个 dialogId。反之,则新建一个 dialogId
         $dialog = $message ? $message->dialog_id : time() . id();
         // 存储私信内容
-        $this->create([
+        $model = $this->create([
             'from_user_id' => id(),
             'to_user_id' => $request->user,
             'body' => $request->body,
             'dialog_id' => $dialog
         ]);
-        return $this->respondWith(['sent' => true]);
+        return $this->respondWith(['sent' => !!$model, 'message' => $model]);
     }
 
     /**
@@ -204,7 +205,7 @@ class InboxRepository extends Repository
     public function transformMessages($messages)
     {
         return $messages->map(function ($message) {
-            $message['created'] = $this->transformTime($message['created_at']);
+            $message['publish_time'] = $this->transformTime($message['created_at']);
             // 设置对话列表的 URL
             $message['dialogUrl'] = '/inbox/' . $message->dialog_id;
             // 列表预览显示发送者信息

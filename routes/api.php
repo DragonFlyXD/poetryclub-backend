@@ -29,6 +29,7 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
     Route::post('user/register', 'UserController@register');
     Route::post('user/login', 'UserController@login');
     // 获取指定用户信息
+    Route::get('user/search', 'UserController@search');
     Route::get('user/{name}', 'UserController@show');
     // 获取关注者列表、粉丝列表、作品列表
     Route::get('user/{user}/followers', 'FollowController@followers');
@@ -55,13 +56,13 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
         // 获取私信列表、
         Route::get('/', 'InboxController@index');
         // 获取对话列表
-        Route::get('inbox/{dialog}', 'InboxController@show')->where('dialog', '\d+');
+        Route::get('/{dialog}', 'InboxController@show')->where('dialog', '\d+');
         // 存储私信内容、对话内容
-        Route::post('inbox', 'InboxController@store');
-        Route::post('inbox/{dialog}', 'InboxController@dialog')->where('dialog', '\d+');
+        Route::post('/', 'InboxController@store');
+        Route::post('/{dialog}', 'InboxController@dialog')->where('dialog', '\d+');
         // 删除对话内容、对话
-        Route::delete('inbox/{dialog}/dialog/{id}', 'InboxController@delete')->where(['dialog' => '\d+', 'id' => '\d+']);
-        Route::delete('inbox/{dialog}', 'InboxController@destroy')->where('dialog', '\d+');
+        Route::delete('/{dialog}/dialog/{id}', 'InboxController@delete')->where(['dialog' => '\d+', 'id' => '\d+']);
+        Route::delete('/{dialog}', 'InboxController@destroy')->where('dialog', '\d+');
     });
 
     /* 邮箱相关 */

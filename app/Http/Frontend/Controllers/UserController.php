@@ -66,7 +66,7 @@ class UserController extends Controller
     }
 
     /**
-     * 查找指定用户
+     * 根据用户名查找用户
      *
      * @param $name
      * @return mixed
@@ -74,6 +74,17 @@ class UserController extends Controller
     public function show($name)
     {
         return $this->user->show($name);
+    }
+
+    /**
+     * 根据昵称查找用户
+     *
+     * @param Request $request
+     * @return mixed
+     */
+    public function search(Request $request)
+    {
+        return $this->user->getUserByNickname($request->query('query'));
     }
 
     /**

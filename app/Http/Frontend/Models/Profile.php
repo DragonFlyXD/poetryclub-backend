@@ -53,6 +53,16 @@ class Profile extends Model
     */
 
     /**
+     * 获取该个人信息所归属的用户
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
      * 获取该用户下的所有诗文
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
