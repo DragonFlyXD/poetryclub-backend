@@ -63,6 +63,8 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
         // 删除对话内容、对话
         Route::delete('/{dialog}/dialog/{id}', 'InboxController@delete')->where(['dialog' => '\d+', 'id' => '\d+']);
         Route::delete('/{dialog}', 'InboxController@destroy')->where('dialog', '\d+');
+        // 全部标志已读
+        Route::get('view', 'InboxController@view');
     });
 
     /* 邮箱相关 */

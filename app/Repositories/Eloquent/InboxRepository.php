@@ -41,18 +41,49 @@ class InboxRepository extends Repository
             ->latest()
             ->get()
             // 获取发送时间最早的一条私信作为列表预览
-            ->unique('dialog_id');
+            ->unique('dialog_id')
+            ->values();
+
         // 全部私信
         $allMessages = $this->transformMessages($messages);
         // 未读私信
         $unreadMessages = $allMessages->reject(function ($message) {
             return id() === $message['from_user_id'] || !!$message['read_at'];
-        });
+        })->values()->all();
+
         return $this->respondWith([
             'allMessages' => $allMessages,
             'unreadMessages' => $unreadMessages,
             'unreadLength' => count($unreadMessages)
         ]);
+    }
+
+    /**
+     * 获取对话列表
+     *
+     * @param $dialog
+     * @return mixed
+     */
+    public function show($dialog)
+    {
+        // 获取对话内容
+        $messages = $this->model
+            ->where([
+                ['dialog_id', $dialog],
+                ['to_user_id', id()],
+                ['to_user_deleted', '<>', true]
+            ])
+            ->orWhere([
+                ['dialog_id', $dialog],
+                ['from_user_id', id()],
+                ['from_user_deleted', '<>', true]
+            ])
+            ->with(['fromUser.profile', 'toUser.profile'])
+            ->latest()
+            ->get();
+        // 标志已读
+        $this->markAsRead($messages);
+        return $this->transformMessages($messages);
     }
 
     /**
@@ -87,7 +118,9 @@ class InboxRepository extends Repository
             'body' => $request->body,
             'dialog_id' => $dialog
         ]);
-        return $this->respondWith(['sent' => !!$model, 'message' => $model]);
+        // 格式化私信数据
+        $res = $this->transformMessages($model, true);
+        return $this->respondWith(['sent' => !!$model, 'message' => $res]);
     }
 
     /**
@@ -99,53 +132,44 @@ class InboxRepository extends Repository
      */
     public function dialog($request, $dialog)
     {
-        $messages = $this->findBy('dialog_id', $dialog);
-        // 抉择 to_user_id
-        $toUserId = $messages->from_user_id === id() ? $messages->to_user_id : $messages->from_user_id;
         // 验证 对话内容
         $this->validate($request,
             ['body' => ['required', 'min:6']],
             ['body.required' => '私信内容不能为空。', 'body.min' => '私信内容至少为6个字符。']);
+        // 获取对话ID
+        $message = $this->findBy('dialog_id', $dialog);
+        // 抉择 to_user_id
+        $toUserId = $message->from_user_id === id() ? $message->to_user_id : $message->from_user_id;
         // 获取单个对话内容
-        $this->create([
+        $model = $this->create([
             'from_user_id' => id(),
             'to_user_id' => $toUserId,
             'body' => $request->body,
             'dialog_id' => $dialog
         ]);
-        return $this->respondWith(['sent' => true]);
+        // 格式化私信数据
+        $res = $this->transformMessages($model, true);
+        return $this->respondWith(['sent' => !!$model, 'message' => $res]);
     }
 
     /**
-     * 获取对话列表
+     * 全部未读私信标志已读
      *
-     * @param $dialog
-     * @return mixed
+     * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function show($dialog)
+    public function view()
     {
         // 获取对话内容
         $messages = $this->model
-            ->where([
-                ['dialog_id', $dialog],
-                ['to_user_id', id()],
-                ['to_user_deleted', '<>', true]
-            ])
-            ->orWhere([
-                ['dialog_id', $dialog],
-                ['from_user_id', id()],
-                ['from_user_deleted', '<>', true]
-            ])
-            ->with(['fromUser.profile', 'toUser.profile'])
-            ->latest()
+            ->where('to_user_id', id())
             ->get();
         // 标志已读
         $this->markAsRead($messages);
-        return $this->transformMessages($messages);
+        return $this->respondWith(['read' => true]);
     }
 
     /**
-     * 删除私信内容
+     * 删除对话内容
      *
      * @param $dialog
      * @param $id
@@ -172,7 +196,7 @@ class InboxRepository extends Repository
     }
 
     /**
-     * 删除对话内容
+     * 删除对话
      *
      * @param $dialog
      * @return \Illuminate\Http\JsonResponse|mixed
@@ -200,11 +224,17 @@ class InboxRepository extends Repository
      * 格式化私信内容
      *
      * @param $messages
+     * @param bool $isOnly
      * @return mixed
      */
-    public function transformMessages($messages)
+    public function transformMessages($messages, $isOnly = false)
     {
-        return $messages->map(function ($message) {
+        // 若格式的为单个私信内容
+        if ($isOnly) {
+            $messages = collection([$messages]);
+        }
+
+        $res = $messages->map(function ($message) {
             $message['publish_time'] = $this->transformTime($message['created_at']);
             // 设置对话列表的 URL
             $message['dialogUrl'] = '/inbox/' . $message->dialog_id;
@@ -213,6 +243,11 @@ class InboxRepository extends Repository
             return collection($message)
                 ->forget(['from_user', 'to_user', 'fromUser', 'toUser']);
         });
+
+        if ($isOnly) {
+            return $res[0];
+        }
+        return $res;
     }
 
     /**

@@ -27,6 +27,17 @@ class InboxController extends Controller
     }
 
     /**
+     * 获取对话列表
+     *
+     * @param $dialog
+     * @return \Illuminate\Http\Response
+     */
+    public function show($dialog)
+    {
+        return $this->inbox->show($dialog);
+    }
+
+    /**
      * 存储私信内容
      *
      * @param  \Illuminate\Http\Request $request
@@ -50,14 +61,13 @@ class InboxController extends Controller
     }
 
     /**
-     * 获取对话列表
+     * 全部未读私信标志已读
      *
-     * @param $dialog
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function show($dialog)
+    public function view()
     {
-        return $this->inbox->show($dialog);
+        return $this->inbox->view();
     }
 
     /**
@@ -82,4 +92,5 @@ class InboxController extends Controller
     {
         return $this->inbox->destroy($dialog);
     }
+
 }
