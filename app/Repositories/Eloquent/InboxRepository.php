@@ -94,10 +94,6 @@ class InboxRepository extends Repository
      */
     public function store($request)
     {
-        // 验证 私信内容
-        $this->validate($request,
-            ['body' => ['required', 'min:6']],
-            ['body.required' => '私信内容不能为空。', 'body.min' => '私信内容至少为6个字符。']);
         // 检查私信双方是否交流过
         $message = $this->model
             ->where([
@@ -132,10 +128,6 @@ class InboxRepository extends Repository
      */
     public function dialog($request, $dialog)
     {
-        // 验证 对话内容
-        $this->validate($request,
-            ['body' => ['required', 'min:6']],
-            ['body.required' => '私信内容不能为空。', 'body.min' => '私信内容至少为6个字符。']);
         // 获取对话ID
         $message = $this->findBy('dialog_id', $dialog);
         // 抉择 to_user_id

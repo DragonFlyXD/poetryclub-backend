@@ -3,6 +3,7 @@
 namespace App\Http\Frontend\Controllers;
 
 use App\Http\Controller;
+use App\Http\Requests\StoreMessage;
 use App\Repositories\Eloquent\InboxRepository as Inbox;
 use Illuminate\Http\Request;
 
@@ -40,10 +41,10 @@ class InboxController extends Controller
     /**
      * 存储私信内容
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param StoreMessage $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreMessage $request)
     {
         return $this->inbox->store($request);
     }
@@ -51,11 +52,11 @@ class InboxController extends Controller
     /**
      * 存储对话内容
      *
-     * @param Request $request
+     * @param StoreMessage $request
      * @param $dialog
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function dialog(Request $request, $dialog)
+    public function dialog(StoreMessage $request, $dialog)
     {
         return $this->inbox->dialog($request, $dialog);
     }
