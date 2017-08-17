@@ -17,9 +17,15 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
     Route::get('scout', 'SearchController@index');
     // 返回分类列表
     Route::get('category', 'CategoryController@index');
+
     /* 社会化登录相关 */
+    // github
     Route::get('oauth/github', 'AuthController@github');
     Route::get('oauth/github/callback', 'AuthController@githubCallback');
+    // weibo
+    Route::get('oauth/weibo', 'AuthController@weibo');
+    Route::get('oauth/weibo/callback', 'AuthController@weiboCallback');
+    Route::get('oauth/weibo/cancel', 'AuthController@weiboCancel');
 
     /* 首页相关 */
     Route::get('home', 'HomeController@index');

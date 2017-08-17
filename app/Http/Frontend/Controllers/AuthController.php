@@ -40,4 +40,34 @@ class AuthController extends Controller
     {
         return $this->user->socialiteCallback('github');
     }
+
+    /**
+     * 跳转至微博授权页面
+     *
+     * @return mixed
+     */
+    public function weibo()
+    {
+        return $this->user->socialiteRedirect('weibo');
+    }
+
+    /**
+     * 微博登录授权的回调
+     *
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function weiboCallback()
+    {
+        return $this->user->socialiteCallback('weibo');
+    }
+
+    /**
+     * 取消微博登录的回调
+     *
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
+    public function weiboCancel()
+    {
+        return redirect('http://www.dragonflyxd.com/user/login');
+    }
 }

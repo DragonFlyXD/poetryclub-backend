@@ -182,24 +182,44 @@ class UserRepository extends Repository
         // 获取该用户的基本个人信息
         $clientUser = Socialite::driver($type)->stateless()->user();
         // 判断该用户是否为第一次授权
-        $user = $this->model->where(['social_type' => $type, 'social_id' => $clientUser->id])->fisrt();
+        $user = $this->model->where(['social_type' => $type, 'social_id' => $clientUser->id])->first();
+
+        // 每次都更换密码, 来获取明文密码,否则获取不了 access_token
+        $password = str_random(16);
+
         // 若为第一次授权,则将其基本个人信息入库
         if (!$user) {
             // 查询其用户名是否已被注册,若已被注册,则用当前时间戳代替
             $isRegister = $this->findBy('name', $clientUser->name);
             $name = $isRegister ? time() : $clientUser->getName();
+
+            // 抉择邮箱是否被注册
+            $clientEmail = $clientUser->getEmail();
+            $email = !!$this->findBy('email', $clientEmail) ? null : $clientEmail;
             $user = $this->create([
                 'name' => $name,
-                'email' => $clientUser->getEmail(),
-                'password' => bcrypt(str_random(16)),
+                'email' => $email,
+                'password' => bcrypt($password),
                 'avatar' => $clientUser->getAvatar(),
-                'is_active' => 1,
-                'social_id' => $clientUser->getId(),
-                'social_type' => $type,
+                'confirmation_token' => str_random(40),
+                'is_active' => 1
             ]);
+            $user->social_id = $clientUser->getId();
+            $user->social_type = $type;
+            $user->is_active = 1;
+            $user->save();
+        } else {
+            // 更换该用户的密码
+            $user->password = bcrypt($password);
+            $user->save();
         }
+
         $this->username = ['name' => $user->name];
-        return $this->respondWith($this->oauth($user));
+        $user->password = $password;
+
+        // 重定向至前台 key 页面
+        $token = $this->oauth($user)['access_token'];
+        return redirect("http://www.dragonflyxd.com/oauth/key?token=$token");
     }
 
     /**
