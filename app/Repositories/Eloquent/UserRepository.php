@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Eloquent;
 
+use App\Mail\PasswordShipped;
 use App\Mail\RegisterShipped;
 use Carbon\Carbon;
 use GuzzleHttp\Client;
@@ -219,7 +220,7 @@ class UserRepository extends Repository
 
         // 重定向至前台 key 页面
         $token = $this->oauth($user)['access_token'];
-        return redirect("http://www.dragonflyxd.com/oauth/key?token=$token");
+        return redirect("http://www.dragonflyxd.com/auth/key?token=$token");
     }
 
     /**
@@ -487,6 +488,59 @@ class UserRepository extends Repository
             return $this->respondWith(['reset' => true]);
         }
         return $this->respondWith(['reset' => false]);
+    }
+
+    /**
+     * 发送重置密码的邮件
+     *
+     * @param $request
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function forgetPassword($request)
+    {
+        $rules = [
+            'email' => ['required', 'max:50', 'regex:/^(\w-*\.*)+@(\w-?)+(\.\w{2,})+$/', 'exists:users,email'],
+            'is_submit' => ['required']
+        ];
+        // 自定义验证数据
+        $this->validate($request, $rules);
+        $user = $this->findBy('email', $request->email);
+        Mail::to($user)
+            ->send(new PasswordShipped($user));
+        return $this->respondWith(['forget' => true]);
+    }
+
+    /**
+     * 验证重置密码邮箱
+     *
+     * @param $request
+     * @param $token
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function verifyPassword($request, $token)
+    {
+        $rules = [
+            'password' => ['required', 'between:6,20', 'regex:/^[a-zA-Z0-9_-]{6,20}$/', 'confirmed'],
+        ];
+        // 验证密码的正确性
+        $this->validate($request, $rules);
+        // 验证该 token 是否存在
+        $user = $this->findBy('confirmation_token', $token);
+        if (is_null($user)) {
+            // 如果 token 失效或不存在,则直接返回
+            return $this->respondWith(['verified' => false]);
+        }
+        // 重置用户的 confirmation_token 与 password
+        $user->confirmation_token = str_random(40);
+        $user->password = bcrypt($password = $request->password);
+        $user->save();
+
+        // 获取用户 access_token
+        $this->username = ['name' => $user->name];
+        $user->password = $password;
+        $token = $this->oauth($user)['access_token'];
+
+        return $this->respondWith(['verified' => true, 'access_token' => $token]);
     }
 
     /**

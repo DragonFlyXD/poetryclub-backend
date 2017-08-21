@@ -27,7 +27,7 @@ class EmailController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function verify(Request $request)
+    public function register(Request $request)
     {
         return $this->user->verifyRegister($request->get('token'));
     }

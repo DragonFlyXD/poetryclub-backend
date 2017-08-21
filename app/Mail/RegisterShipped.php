@@ -33,7 +33,7 @@ class RegisterShipped extends Mailable
         return $this->view('email.user.register')
             ->subject('邮箱验证')
             ->with([
-                'verify_url' => 'http://www.dragonflyxd.com/email/verify?token=' . $this->user->confirmation_token,
+                'verify_url' => 'http://www.dragonflyxd.com/email/register/verify?token=' . $this->user->confirmation_token,
                 'name' => $this->user->name
             ]);
     }

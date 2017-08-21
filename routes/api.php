@@ -11,6 +11,9 @@
 |
 */
 Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], function () {
+    Route::get('test', function (){
+        return view('email.password.reset');
+    });
     // 自动部署
     Route::any('deploy', 'DeployController@deploy');
     // 检索搜索内容
@@ -34,6 +37,9 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
     // 用户注册、用户登录
     Route::post('user/register', 'UserController@register');
     Route::post('user/login', 'UserController@login');
+    // 忘记密码、邮箱重置密码
+    Route::post('user/password/forget', 'PasswordController@forget');
+    Route::post('user/password/reset/{token}', 'PasswordController@email');
     // 获取指定用户信息
     Route::get('user/search', 'UserController@search');
     Route::get('user/{name}', 'UserController@show');
@@ -53,7 +59,7 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
         // 更新个人信息
         Route::put('update', 'UserController@update');
         // 重置密码、用户退出
-        Route::post('reset', 'UserController@reset');
+        Route::post('password/reset', 'PasswordController@reset');
         Route::post('logout', 'UserController@logout');
     });
 
@@ -75,8 +81,8 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
 
     /* 邮箱相关 */
     Route::group(['prefix' => 'email'], function () {
-        // 验证token值
-        Route::get('verify', 'EmailController@verify');
+        // 验证用户注册
+        Route::get('register/verify', 'EmailController@register');
         // 发送网站建议反馈邮件
         Route::post('feedback', 'EmailController@feedback');
     });

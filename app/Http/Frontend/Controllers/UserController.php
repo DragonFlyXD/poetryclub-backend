@@ -110,15 +110,6 @@ class UserController extends Controller
     }
 
     /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse|mixed
-     */
-    public function reset(Request $request)
-    {
-        return $this->user->resetPassword($request);
-    }
-
-    /**
      * 用户退出登录
      */
     public function logout()
