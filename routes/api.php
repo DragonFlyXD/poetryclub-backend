@@ -96,8 +96,9 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
     // 获取指定诗文的评分信息
     Route::get('poem/{poem}/rating', 'RatingController@poem')->where('poem', '\d+');
     Route::group(['prefix' => 'poem', 'middleware' => 'auth:api'], function () {
-        // 存储诗文信息
+        // 存储、更新诗文
         Route::post('/', 'PoemController@store');
+        Route::put('/{poem}', 'PoemController@update')->where('poem', '\d+');
         // 点赞、收藏诗文
         Route::post('vote', 'VoteController@votePoem');
         Route::post('favorite', 'FavoriteController@favorPoem');

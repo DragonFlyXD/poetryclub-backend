@@ -293,13 +293,15 @@
             // 若为编辑页面,填充默认数据
             edit() {
                 if (this.is_edit && this.localEditForm) {
+                    // 远程获取分类
+                    this.fetchCategory()
                     const matched = [
                         'title', 'dynamicTags', 'category', 'body'
                     ]
                     matched.forEach(item => {
                         if (this.localEditForm[item]) {
                             this.form[item] = this.localEditForm[item]
-                        } else if (item === 'dynamicTags' && this.localEditForm['tags']) {
+                        } else if (item === 'dynamicTags' && this.localEditForm['tags'].length > 0) {
                             // 获取标签名的集合
                             const tags = this.localEditForm['tags']
                             for (let index in tags) {
@@ -307,8 +309,6 @@
                             }
                         }
                     })
-                    // 远程获取分类
-                    this.fetchCategory()
                 }
             }
 

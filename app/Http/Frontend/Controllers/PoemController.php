@@ -53,5 +53,17 @@ class PoemController extends Controller
         return $this->poem->show($poem);
     }
 
+    /**
+     * 更新诗文
+     *
+     * @param StorePoem $request
+     * @param $poem
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function update(StorePoem $request, $poem)
+    {
+        return $this->poem->renew($request, $poem);
+    }
+
 
 }
