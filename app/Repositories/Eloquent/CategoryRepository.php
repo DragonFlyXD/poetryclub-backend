@@ -25,15 +25,15 @@ class CategoryRepository extends Repository
     {
         // 若为展示分类列表
         if (!$query) {
-            $paginate = $this->paginate()->toArray();
+            $categories = $this->all()->toArray();
         } else {
             // 若有查询参数
-            $paginate = $this->model
+            $categories = $this->model
                 ->where('name', 'like', "%$query%")
-                ->paginate(10)
+                ->get()
                 ->toArray();
         }
-        return $paginate;
+        return $categories;
     }
 
     /**

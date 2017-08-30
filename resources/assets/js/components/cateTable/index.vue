@@ -169,9 +169,11 @@
                 this.currentIndex = index
                 if (typeof id === 'number') {
                     this.form.name = this.localData[this.currentIndex].name
+                    this.form.id = id
                     this.toggleCateDialog()
                 } else if (this.multipleSelection.length) {
                     this.form.name = this.multipleSelection[0].name
+                    this.form.id = this.multipleSelection[0].id
                     this.toggleCateDialog()
                 } else {
                     this.$message({

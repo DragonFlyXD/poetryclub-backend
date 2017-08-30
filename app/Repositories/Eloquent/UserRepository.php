@@ -565,4 +565,5 @@ class UserRepository extends Repository
             ->update(['revoked' => true]);
         return $this->respondWith(['logout' => true]);
     }
+
 }

@@ -11,9 +11,6 @@
 |
 */
 Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], function () {
-    Route::get('test', function (){
-        return view('email.password.reset');
-    });
     // 自动部署
     Route::any('deploy', 'DeployController@deploy');
     // 检索搜索内容

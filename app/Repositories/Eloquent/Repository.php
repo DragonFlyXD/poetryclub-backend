@@ -552,10 +552,12 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
         // 如果是 attached 行为,则给该目标的总数 +1
         if (!empty($toggle['attached'])) {
             $data->increment($cnt);
+            (new \App\Http\Frontend\Models\User())->find(id())->increment($cnt);
             return $this->respondWith([$info => true]);
         }
         // 反之则 -1
         $data->decrement($cnt);
+        (new \App\Http\Frontend\Models\User())->find(id())->decrement($cnt);
         return $this->respondWith([$info => false]);
     }
 
@@ -597,8 +599,6 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             return 'App\Http\Frontend\Models\Poem';
         } elseif ($type === 'appreciation') {
             return 'App\Http\Frontend\Models\Appreciation';
-        } elseif ($type === 'user') {
-            return 'App\Http\Frontend\Models\User';
         }
     }
 
@@ -617,10 +617,12 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             $model = (new \App\Http\Frontend\Models\Poem());
         } elseif ($name === 'App\Http\Frontend\Models\Appreciation') {
             $model = (new \App\Http\Frontend\Models\Appreciation());
-        } else if ($name === 'App\Http\Frontend\Models\User') {
-            $model = (new \App\Http\Frontend\Models\User());
         }
-        $model && $model->find($id)->increment($type);
+
+        if ($model) {
+            (new \App\Http\Frontend\Models\User())->find(id())->increment($type);
+            $model->find($id)->increment($type);
+        }
     }
 
     /**

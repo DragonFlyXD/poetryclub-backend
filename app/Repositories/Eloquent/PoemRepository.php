@@ -89,7 +89,7 @@ class PoemRepository extends Repository
             return (log10($poem['pageviews_count']) * 4
                 + $meta / 5
                 + $poem['comments_count'] / 100)
-                + $rating
+            + $rating
             / ($poem['created_at']->timestamp / 3600);
         };
 
@@ -102,8 +102,17 @@ class PoemRepository extends Repository
             }
             return ($a > $b) ? -1 : 1;
         });
-
-        return $this->transformModels($sortedPoems)->values()->take(20)->all();
+        $result = $this->transformModels($sortedPoems)->values();
+        $hotPoems = $result->take(20)->all();
+        $hotAuthors = $result
+            ->pluck('user')
+            ->unique('id')
+            ->values()
+            ->take(200)
+            ->shuffle()
+            ->take(5)
+            ->all();
+        return $this->respondWith(['poem' => $hotPoems, 'author' => $hotAuthors]);
     }
 
     /**
@@ -183,6 +192,7 @@ class PoemRepository extends Repository
             'title' => $request->title,
             'body' => $request->body,
             'category_id' => $this->category->findBy('name', $request->category)->id,
+            'summary' => mb_substr($request->body, 0, 150, 'UTF-8')
         ], $id);
         // 若更新成功
         if ($result) {
