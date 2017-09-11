@@ -203,12 +203,10 @@ class UserRepository extends Repository
                 'password' => bcrypt($password),
                 'avatar' => $clientUser->getAvatar(),
                 'confirmation_token' => str_random(40),
-                'is_active' => 1
+                'is_active' => 1,
+                'social_id' => $clientUser->getId(),
+                'social_type' => $type
             ]);
-            $user->social_id = $clientUser->getId();
-            $user->social_type = $type;
-            $user->is_active = 1;
-            $user->save();
         } else {
             // 更换该用户的密码
             $user->password = bcrypt($password);

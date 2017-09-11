@@ -47,7 +47,7 @@ use Illuminate\Database\Eloquent\Model;
 class Appreciation extends Model
 {
     protected $fillable = [
-        'user_id', 'poem_id', 'title', 'body', 'summary', 'is_original'
+        'user_id', 'poem_id', 'category_id', 'title', 'body', 'summary', 'is_original'
     ];
 
     protected static function boot()
