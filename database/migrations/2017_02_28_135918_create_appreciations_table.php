@@ -17,6 +17,7 @@ class CreateAppreciationsTable extends Migration
             $table->increments('id')->comment('自增ID');
             $table->unsignedInteger('user_id')->comment('用户ID');
             $table->unsignedInteger('poem_id')->comment('诗文ID');
+            $table->unsignedInteger('category_id')->default(0)->comment('分类ID');
             $table->string('title', 50)->comment('标题');
             $table->text('body')->comment('内容');
             $table->string('summary',450)->comment('摘要');
@@ -33,7 +34,7 @@ class CreateAppreciationsTable extends Migration
             $table->boolean('is_hidden')->default(0)->comment('是否隐藏该诗文');
             $table->timestamps();
 
-            $table->index(['user_id', 'poem_id']);
+            $table->index(['user_id', 'poem_id', 'category_id']);
         });
     }
 

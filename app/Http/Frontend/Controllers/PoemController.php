@@ -28,7 +28,7 @@ class PoemController extends Controller
      */
     public function index()
     {
-        return $this->poem->index();
+        return $this->poem->index(request()->query('query'));
     }
 
     /**

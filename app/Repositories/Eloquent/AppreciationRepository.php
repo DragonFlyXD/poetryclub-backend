@@ -40,12 +40,12 @@ class AppreciationRepository extends Repository
         // 获取分页数据
         $paginate = $this->paginate()->toArray();
         // 格式化品鉴数据
-        $poems = collection($paginate['data'])->map(function ($item) {
-            return $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+        $appreciations = collection($paginate['data'])->map(function ($item) {
+            return $this->with(['user.profile', 'tags', 'poem.user.profile', 'comments.user.profile', 'comments' => function ($query) {
                 $query->orderBy('comments.created_at', 'desc');
             }])->find($item['id']);
         });
-        $paginate['data'] = $this->transformModels($poems)
+        $paginate['data'] = $this->transformModels($appreciations, 'appreciation')
             ->sortByDesc('created_at')
             ->values()
             ->all();
@@ -61,38 +61,47 @@ class AppreciationRepository extends Repository
     public function store($request)
     {
         // 创建品鉴
+        $userId = id() ?: id('web');
         $appreciation = $this->create([
-            'user_id' => id(),
-            'category_id' => $this->category->findBy('name', $request->category)->id,
+            'poem_id' => $poem = $request->poem,
+            'user_id' => $userId,
+            'category_id' => $request->category,
             'title' => $request->title,
             'body' => $request->body,
             'summary' => mb_substr($request->body, 0, 150, 'UTF-8')
         ]);
-        // 若品鉴有定义标签
-        if (($tags = $request->dynamicTags) && count($request->dynamicTags) <= 5) {
-            // 标签不存在,则新建之
-            $ids = collection($tags)->map(function ($tag) use ($appreciation) {
-                return (new  \App\Http\Frontend\Models\Tag)->firstOrCreate(['name' => $tag])->id;
-            });
-            $appreciation->storeTags($ids);
+        if ($result = !!$appreciation) {
+            // 作者作品总数 +1
+            (new \App\Http\Frontend\Models\User())->find($userId)->increment('works_count');
+            // 被品鉴诗文的品鉴数量 +1
+            (new \App\Http\Frontend\Models\Poem())->find($poem)->increment('appreciations_count');
+            // 若诗文有定义标签
+            if (($tags = $request->dynamicTags) && count($request->dynamicTags) <= 5) {
+                // 标签不存在,则新建之
+                $ids = collection($tags)->map(function ($tag) use ($appreciation) {
+                    return (new \App\Http\Frontend\Models\Tag)->firstOrCreate(['name' => $tag])->id;
+                });
+                $appreciation->storeTags($ids);
+            }
+            return $this->respondWith(['created' => $result, 'appreciation' => $appreciation]);
         }
-        return $this->respondWith(['created' => true, 'poem' => $appreciation]);
+        return $this->respondWith(['created' => $result]);
     }
 
     /**
      * 获取指定品鉴
      *
-     * @param $appreciation
+     * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function show($appreciation)
+    public function show($id)
     {
-        $poem = $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+        $appreciation = $this->with(['user.profile.poems', 'tags', 'poem', 'comments.user.profile', 'comments' => function ($query) {
             $query->orderBy('comments.created_at', 'desc');
-        }])->find($appreciation);
+        }])->find($id);
         // 页面浏览数 +1
-        $poem->increment('pageviews_count');
-        return $this->transformModel($poem)
+        $appreciation->increment('pageviews_count');
+        return $this->transformModel($appreciation, 'appreciation')
             ?: $this->errorNotFound();
     }
 

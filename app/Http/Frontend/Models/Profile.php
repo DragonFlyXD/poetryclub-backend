@@ -71,4 +71,14 @@ class Profile extends Model
     {
         return $this->hasMany(Poem::class, 'user_id', 'user_id');
     }
+
+    /**
+     * 获取该用户下的所有品鉴
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function appreciations()
+    {
+        return $this->hasMany(Appreciation::class, 'user_id', 'user_id');
+    }
 }

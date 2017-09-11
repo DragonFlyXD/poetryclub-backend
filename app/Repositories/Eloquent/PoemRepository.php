@@ -36,7 +36,7 @@ class PoemRepository extends Repository
      * @param $query
      * @return mixed
      */
-    public function index($query = '')
+    public function index($query)
     {
         // 获取分页数据
         if (!$query) {
@@ -127,7 +127,7 @@ class PoemRepository extends Repository
         $userId = id() ?: id('web');
         $poem = $this->create([
             'user_id' => $userId,
-            'category_id' => $this->category->findBy('name', $request->category)->id,
+            'category_id' => $request->category,
             'title' => $request->title,
             'body' => $request->body,
             'summary' => mb_substr($request->body, 0, 150, 'UTF-8')
@@ -145,7 +145,7 @@ class PoemRepository extends Repository
             }
             return $this->respondWith(['created' => $result, 'poem' => $poem]);
         }
-        return $this->respondWith(['created_at' => $result]);
+        return $this->respondWith(['created' => $result]);
     }
 
     /**
@@ -157,7 +157,11 @@ class PoemRepository extends Repository
     public function show($id)
     {
         // (查询耗费平均时间: 10ms)
-        $poem = $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+        $poem = $this->with(['user.profile.poems' => function ($query) {
+            $query->orderBy('poems.pageviews_count', 'desc');
+        }, 'user.profile.appreciations' => function ($query) {
+            $query->orderBy('appreciations.pageviews_count', 'desc');
+        }, 'appreciations.user.profile', 'comments.user.profile', 'comments' => function ($query) {
             $query->orderBy('comments.created_at', 'desc');
         }])->find($id);
         // 页面浏览数 +1

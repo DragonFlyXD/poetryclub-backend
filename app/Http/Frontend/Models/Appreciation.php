@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
  * @mixin \Eloquent
  * @property int $id 自增ID
  * @property int $user_id 用户ID
- * @property int $poem_id 诗文ID
+ * @property int $poem_id 品鉴ID
  * @property string $title 标题
  * @property string $body 内容
  * @property int $pageviews_count 浏览量总数
@@ -20,10 +20,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $appreciations_count
  * @property int $shares_count 分享总数
  * @property int $likes_count 被点赞总数
- * @property bool $is_original 是否为原创诗文
+ * @property bool $is_original 是否为原创品鉴
  * @property bool $is_valid 是否已发布
  * @property bool $close_comment 是否关闭评论
- * @property bool $is_hidden 是否隐藏该诗文
+ * @property bool $is_hidden 是否隐藏该品鉴
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @method static \Illuminate\Database\Query\Builder|\App\Http\Frontend\Models\Appreciation whereAppreciationsCount($value)
@@ -91,7 +91,7 @@ class Appreciation extends Model
     */
 
     /**
-     * 获取该诗文所属的用户模型
+     * 获取该品鉴所属的用户模型
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -101,7 +101,17 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文所属的标签模型
+     * 获取该品鉴所属的品鉴模型
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function poem()
+    {
+        return $this->belongsTo(Poem::class);
+    }
+
+    /**
+     * 获取该品鉴所属的标签模型
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
@@ -111,7 +121,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文所有的评论模型
+     * 获取该品鉴所有的评论模型
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
@@ -121,7 +131,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文所有的评分
+     * 获取该品鉴所有的评分
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
@@ -131,7 +141,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文所属的点赞模型
+     * 获取该品鉴所属的点赞模型
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
@@ -141,7 +151,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文所属的收藏模型
+     * 获取该品鉴所属的收藏模型
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
@@ -151,7 +161,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文的评分状态
+     * 获取该品鉴的评分状态
      *
      * @param $user
      * @return bool
@@ -162,7 +172,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文的点赞状态
+     * 获取该品鉴的点赞状态
      *
      * @param $user
      * @return bool
@@ -173,7 +183,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 获取该诗文的收藏状态
+     * 获取该品鉴的收藏状态
      *
      * @param $user
      * @return bool
@@ -184,7 +194,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 存储诗文标签
+     * 存储品鉴标签
      *
      * @param $tags
      */
@@ -194,7 +204,18 @@ class Appreciation extends Model
     }
 
     /**
-     * 切换诗文的点赞状态
+     * 更新标签集
+     *
+     * @param $tags
+     * @return array
+     */
+    public function updateTags($tags)
+    {
+        return $this->tags()->sync($tags);
+    }
+
+    /**
+     * 切换品鉴的点赞状态
      *
      * @param $vote
      * @return array
@@ -205,7 +226,7 @@ class Appreciation extends Model
     }
 
     /**
-     * 切换诗文的收藏状态
+     * 切换品鉴的收藏状态
      *
      * @param $favorite
      * @return array

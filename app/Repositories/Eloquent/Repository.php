@@ -461,39 +461,82 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
      * 格式化模型信息
      *
      * @param $model
+     * @param string $type
+     * @param bool $isRepeat
      * @return mixed
      */
-    public function transformModel($model)
+    public function transformModel($model, $type = 'poem', $isRepeat = false)
     {
         // 设置作品的 Date 格式的发表时间
         $model['publish_time'] = $this->transformTime($model['created_at']);
         $model = collection($model);
         $user = $this->transformUser($model['user']);
 
-        if ($user->has('poems')) {     // 如果该用户有作品
-            $works = collection($user['poems'])->map(function ($work) {
-                // 设置作品的地址链接和名字
-                $work['poemUrl'] = '/poem/' . $work['id'];
-                $work['poemName'] = $work['title'];
-                $work['publish_time'] = $this->transformTime($work['created_at']);
-                return collection($work)
-                    ->only('poemUrl', 'poemName', 'publish_time');
-            });
-            $user = $user
-                ->merge(['works' => $works])
-                ->forget('poems');
-        };
-        if ($model->has('comments')) {
-            $model['comments'] = $this->transformComment($model['comments']);
+        // 若不是重复格式化模型
+        if (!$isRepeat) {
+            // 如果该用户有诗文作品
+            if ($user->has('poems')) {
+                $user['poems'] = collection($user['poems'])->map(function ($work) {
+                    // 设置诗文作品的地址链接和名字
+                    $work['workUrl'] = '/poem/' . $work['id'];
+                    $work['workName'] = $work['title'];
+                    $work['publish_time'] = $this->transformTime($work['created_at']);
+                    return collection($work)
+                        ->only('workUrl', 'workName', 'publish_time');
+                });
+            };
+
+            // 如果该用户有品鉴作品
+            if ($user->has('appreciations')) {
+                $user['appreciations'] = collection($user['appreciations'])->map(function ($work) {
+                    // 设置作品的地址链接和名字
+                    $work['workUrl'] = '/appreciation/' . $work['id'];
+                    $work['workName'] = $work['title'];
+                    $work['publish_time'] = $this->transformTime($work['created_at']);
+                    return collection($work)
+                        ->only('workUrl', 'workName', 'publish_time');
+                });
+            };
+
+            // 若有评论,则格式化它
+            if ($model->has('comments')) {
+                $model['comments'] = $this->transformComment($model['comments']);
+            }
+
+            // 获取分类名
+            $model['category'] = \App\Http\Frontend\Models\Category::find($model['category_id'])->name;
+
+            // 若用户已登录且该诗文存在品鉴
+            if (check() && $model->has('appreciations')) {
+                // 格式化品鉴集合
+                $model['appreciations'] = $this->transformModels(collect($model['appreciations']), 'appreciation', true);
+                // 已登录用户是否品鉴过该诗文
+                $model['appreciated'] = false;
+                foreach ($model['appreciations'] as $appreciation) {
+                    if ($appreciation['user_id'] === id()) {
+                        $model['appreciated'] = true;
+                        break;
+                    }
+                }
+            }
+
+            // 格式化品鉴的源诗文
+            if ($type === 'appreciation' && $model->has('poem')) {
+                $model['poem'] = $this->transformModel(collect($model['poem']), 'poem', true);
+            }
         }
 
-        // 获取分类名
-        $model['category'] = \App\Http\Frontend\Models\Category::find($model['category_id'])->name;
+
+        // 设置作品地址链接
+        if ($type === 'poem') {
+            $model->prepend('/poem/' . $model['id'], 'poemUrl');
+        } elseif ($type === 'appreciation') {
+            $model->prepend('/appreciation/' . $model['id'], 'appreciationUrl');
+        }
 
         return $model
-            ->prepend($user['profileUrl'], 'profileUrl')//设置作者个人主页地址
+            ->prepend($user['profileUrl'], 'profileUrl')// 设置作者个人主页地址
             ->prepend($user['nickname'], 'authorName')// 设置作者昵称
-            ->prepend('/poem/' . $model['id'], 'poemUrl')// 设置作品地址链接
             ->merge(['user' => $user]);
     }
 
@@ -501,23 +544,29 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
      * 格式化模型集合
      *
      * @param $models
+     * @param string $type
+     * @param bool $isRepeat
      * @return mixed
      */
-    public function transformModels($models)
+    public function transformModels($models, $type = 'poem', $isRepeat = false)
     {
         // 如果用户已经登录
         if (check()) {
-            return $models->map(function ($item) {
-                $data = $this->transformModel($item);
-                // 点赞状态
-                $data['voted'] = $item->voted($id = id());
-                // 收藏状态
-                $data['favored'] = $item->favored($id);
+            return $models->map(function ($item) use ($type, $isRepeat) {
+                $data = $this->transformModel($item, $type, $isRepeat);
+                // 若不是重复格式化模型
+                if (!$isRepeat) {
+                    // 点赞状态
+                    $data['voted'] = $item->voted($id = id());
+                    // 收藏状态
+                    $data['favored'] = $item->favored($id);
+                }
                 return $data;
             });
         }
-        return $models->map(function ($item) {
-            return $this->transformModel($item);
+
+        return $models->map(function ($item) use ($type) {
+            return $this->transformModel($item, $type);
         });
     }
 
@@ -530,8 +579,8 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
      */
     public function toggleAction($id, Model $model)
     {
-        // 动作次数 与 返回信息
-        $cnt = null;
+        // 动作字段 与 返回信息
+        $field = null;
         $info = null;
         // 查询指定ID的模型信息
         $data = $this->find($id);
@@ -541,23 +590,23 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
         if ($model instanceof \App\Http\Frontend\Models\Vote) {
             // 点赞模型
             $toggle = $data->toggleVote($model->id);
-            $cnt = 'likes_count';
+            $field = 'likes_count';
             $info = 'voted';
         } elseif ($model instanceof \App\Http\Frontend\Models\Favorite) {
             // 收藏模型
             $toggle = $data->toggleFavorite($model->id);
-            $cnt = 'favorites_count';
+            $field = 'favorites_count';
             $info = 'favored';
         }
         // 如果是 attached 行为,则给该目标的总数 +1
         if (!empty($toggle['attached'])) {
-            $data->increment($cnt);
-            (new \App\Http\Frontend\Models\User())->find(id())->increment($cnt);
+            $data->increment($field);
+            (new \App\Http\Frontend\Models\User())->find(id())->increment($field);
             return $this->respondWith([$info => true]);
         }
         // 反之则 -1
-        $data->decrement($cnt);
-        (new \App\Http\Frontend\Models\User())->find(id())->decrement($cnt);
+        $data->decrement($field);
+        (new \App\Http\Frontend\Models\User())->find(id())->decrement($field);
         return $this->respondWith([$info => false]);
     }
 

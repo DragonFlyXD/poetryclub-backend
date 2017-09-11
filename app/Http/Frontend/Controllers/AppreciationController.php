@@ -3,6 +3,7 @@
 namespace App\Http\Frontend\Controllers;
 
 use App\Http\Controller;
+use App\Http\Requests\StoreAppreciation;
 use App\Http\Requests\StorePoem;
 use App\Repositories\Eloquent\AppreciationRepository as Appreciation;
 use Illuminate\Http\Request;
@@ -33,10 +34,10 @@ class AppreciationController extends Controller
     /**
      * 存储品鉴信息
      *
-     * @param StorePoem $request
+     * @param StoreAppreciation $request
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function store(StorePoem $request)
+    public function store(StoreAppreciation $request)
     {
         return $this->appreciation->store($request);
     }

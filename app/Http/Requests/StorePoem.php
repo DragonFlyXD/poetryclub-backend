@@ -24,7 +24,7 @@ class StorePoem extends FormRequest
     public function rules()
     {
         return [
-            'category' => ['required', 'string'],
+            'category' => ['required', 'numeric'],
             'title' => ['required', 'between:1,50'],
             'body' => ['required'],
             'dynamicTags' => ['array', 'between:1,5']
@@ -34,7 +34,6 @@ class StorePoem extends FormRequest
     public function messages()
     {
         return [
-            'category.string' => '分类类型错误。',
             'dynamicTags.array' => '标签类型错误。',
             'dynamicTags.between' => '标签数量必须介于1-5个之间。'
         ];

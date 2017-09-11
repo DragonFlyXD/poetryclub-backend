@@ -126,6 +126,16 @@ class User extends Authenticatable
     }
 
     /**
+     * 获取该用户下所有的品鉴
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function appreciations()
+    {
+        return $this->hasMany(Appreciation::class);
+    }
+
+    /**
      * 获取该用户的个人信息
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne

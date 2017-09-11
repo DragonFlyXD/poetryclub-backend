@@ -121,6 +121,16 @@ class Poem extends Model
     }
 
     /**
+     * 获取该诗文下所属的所有品鉴模型
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function appreciations()
+    {
+        return $this->hasMany(Appreciation::class);
+    }
+
+    /**
      * 获取该诗文所属的标签模型
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
