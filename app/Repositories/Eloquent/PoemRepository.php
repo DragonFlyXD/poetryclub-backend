@@ -40,7 +40,8 @@ class PoemRepository extends Repository
     {
         // 获取分页数据
         if (!$query) {
-            $paginate = $this->paginate()->toArray();
+            $paginate = $this->model
+                ->orderBy('created_at', 'desc')->paginate(10)->toArray();
         } else {
             // 若有查询参数
             $paginate = $this->model
@@ -55,15 +56,14 @@ class PoemRepository extends Repository
         }
 
         // 格式化诗文数据
-        $poems = collection($paginate['data'])->map(function ($item) {
+        $poems = collect($paginate['data'])
+            ->map(function ($item) {
             // 这样预加载性能不友好,暂时不知道有什么方法... (查询耗费平均时间: 50ms)
             return $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
                 $query->orderBy('comments.created_at', 'desc');
             }])->find($item['id']);
         });
         $paginate['data'] = $this->transformModels($poems)
-            ->sortByDesc('created_at')
-            ->values()
             ->all();
 
         return $paginate;

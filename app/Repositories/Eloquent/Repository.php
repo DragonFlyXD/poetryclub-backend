@@ -506,16 +506,18 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             // 获取分类名
             $model['category'] = \App\Http\Frontend\Models\Category::find($model['category_id'])->name;
 
-            // 若用户已登录且该诗文存在品鉴
-            if (check() && $model->has('appreciations')) {
+            // 格式化该诗文下的品鉴
+            if ($type === 'poem' && $model->has('appreciations')) {
                 // 格式化品鉴集合
                 $model['appreciations'] = $this->transformModels(collect($model['appreciations']), 'appreciation', true);
                 // 已登录用户是否品鉴过该诗文
-                $model['appreciated'] = false;
-                foreach ($model['appreciations'] as $appreciation) {
-                    if ($appreciation['user_id'] === id()) {
-                        $model['appreciated'] = true;
-                        break;
+                if (check()) {
+                    $model['appreciated'] = false;
+                    foreach ($model['appreciations'] as $appreciation) {
+                        if ($appreciation['user_id'] === id()) {
+                            $model['appreciated'] = true;
+                            break;
+                        }
                     }
                 }
             }

@@ -38,16 +38,16 @@ class AppreciationRepository extends Repository
     public function index()
     {
         // 获取分页数据
-        $paginate = $this->paginate()->toArray();
+        $paginate = $this->model
+            ->orderBy('created_at', 'desc')->paginate(10)->toArray();
         // 格式化品鉴数据
-        $appreciations = collection($paginate['data'])->map(function ($item) {
+        $appreciations = collection($paginate['data'])
+            ->map(function ($item) {
             return $this->with(['user.profile', 'tags', 'poem.user.profile', 'comments.user.profile', 'comments' => function ($query) {
                 $query->orderBy('comments.created_at', 'desc');
             }])->find($item['id']);
         });
         $paginate['data'] = $this->transformModels($appreciations, 'appreciation')
-            ->sortByDesc('created_at')
-            ->values()
             ->all();
         return $paginate;
     }
