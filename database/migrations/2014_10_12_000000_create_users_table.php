@@ -33,6 +33,7 @@ class CreateUsersTable extends Migration
             $table->unsignedInteger('shares_count')->default(0)->comment('分享总数');
             $table->unsignedInteger('followers_count')->default(0)->comment('关注总数');
             $table->unsignedInteger('followings_count')->default(0)->comment('被关注总数');
+            $table->unsignedBigInteger('ratings_count')->default(0)->comment('评分总数');
             $table->rememberToken()->comment('记住用户名');
             $table->timestamps();
 

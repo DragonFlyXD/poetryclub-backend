@@ -168,7 +168,7 @@ class Appreciation extends Model
      */
     public function rated($user)
     {
-        return !!$this->ratings()->where('user_id', $user)->count();
+        return $this->ratings()->where('user_id', $user)->first();
     }
 
     /**
