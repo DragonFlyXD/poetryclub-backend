@@ -111,6 +111,24 @@ class AppreciationRepository extends Repository
     }
 
     /**
+     * 搜索指定品鉴
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function scout($keyword)
+    {
+        return $this->transformModels($this->with(['user.profile', 'tags', 'poem.user.profile', 'comments.user.profile', 'comments' => function ($query) {
+            $query->orderBy('comments.created_at', 'desc');
+        }])
+            ->where('title', 'like', "%$keyword%")
+            ->get(), 'appreciation')
+            ->sortByDesc('pageviews_count')
+            ->values()
+            ->all();
+    }
+
+    /**
      * 更新指定品鉴
      *
      * @param $request

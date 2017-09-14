@@ -700,27 +700,4 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
         return round($score, 1);
     }
 
-    /**
-     * 检索搜索内容
-     *
-     * @param $search
-     * @return mixed
-     */
-    public function scout($search)
-    {
-        return $this->transformModels($this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
-            $query->orderBy('comments.created_at', 'desc');
-        }])
-            ->where('title', 'like', "%$search%")
-            ->get())
-            ->sortByDesc('pageviews_count')
-            ->values()
-            ->all();
-        /*return $this->model->search($search)->get()
-            ->map(function ($item) {
-                return $this->transformModel($item->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
-                    $query->orderBy('comments.created_at', 'desc');
-                }])->find($item['id']));
-            });*/
-    }
 }

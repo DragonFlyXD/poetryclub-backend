@@ -171,6 +171,30 @@ class PoemRepository extends Repository
     }
 
     /**
+     * 搜索指定诗文
+     *
+     * @param $keyword
+     * @return mixed
+     */
+    public function scout($keyword)
+    {
+        return $this->transformModels($this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+            $query->orderBy('comments.created_at', 'desc');
+        }])
+            ->where('title', 'like', "%$keyword%")
+            ->get())
+            ->sortByDesc('pageviews_count')
+            ->values()
+            ->all();
+        /*return $this->model->search($search)->get()
+            ->map(function ($item) {
+                return $this->transformModel($item->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+                    $query->orderBy('comments.created_at', 'desc');
+                }])->find($item['id']));
+            });*/
+    }
+
+    /**
      * 获取需要更新的诗文的数据
      *
      * @param $id

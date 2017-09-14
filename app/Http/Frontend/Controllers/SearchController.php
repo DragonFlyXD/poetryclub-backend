@@ -36,7 +36,7 @@ class SearchController extends Controller
         // 检索诗文
         $poem = $this->poem->scout($keywords);
         // 检索品鉴
-        // $appreciation = $this->appreciation->scout($keywords);
-        return response()->json(['poem' => $poem]);
+        $appreciation = $this->appreciation->scout($keywords);
+        return response()->json(['poem' => $poem, 'appreciation' => $appreciation]);
     }
 }
