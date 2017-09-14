@@ -117,8 +117,9 @@ Route::group(['namespace' => 'Frontend\Controllers', 'middleware' => 'cors'], fu
     // 获取指定品鉴的评分
     Route::get('appreciation/{appreciation}/rating', 'RatingController@appreciation')->where('appreciation', '\d+');
     Route::group(['prefix' => 'appreciation', 'middleware' => 'auth:api'], function () {
-        // 存储品鉴信息
+        // 存储、更新品鉴信息
         Route::post('/', 'AppreciationController@store');
+        Route::put('/{appreciation}', 'AppreciationController@update')->where('appreciation', '\d+');
         // 点赞、收藏品鉴
         Route::post('vote', 'VoteController@voteAppreciation');
         Route::post('favorite', 'FavoriteController@favorAppreciation');

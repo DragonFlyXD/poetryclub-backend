@@ -96,13 +96,49 @@ class AppreciationRepository extends Repository
      */
     public function show($id)
     {
-        $appreciation = $this->with(['user.profile.poems', 'tags', 'poem', 'comments.user.profile', 'comments' => function ($query) {
+        // (查询耗费平均时间: 10ms)
+        $poem = $this->with(['user.profile.poems' => function ($query) {
+            $query->orderBy('poems.pageviews_count', 'desc');
+        }, 'user.profile.appreciations' => function ($query) {
+            $query->orderBy('appreciations.pageviews_count', 'desc');
+        }, 'poem', 'tags', 'comments.user.profile', 'comments' => function ($query) {
             $query->orderBy('comments.created_at', 'desc');
         }])->find($id);
         // 页面浏览数 +1
-        $appreciation->increment('pageviews_count');
-        return $this->transformModel($appreciation, 'appreciation')
+        $poem->increment('pageviews_count');
+        return $this->transformModel($poem)
             ?: $this->errorNotFound();
+    }
+
+    /**
+     * 更新指定品鉴
+     *
+     * @param $request
+     * @param $id
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function renew($request, $id)
+    {
+        $result = $this->update([
+            'poem_id' => $request->poem,
+            'title' => $request->title,
+            'body' => $request->body,
+            'category_id' => $request->category,
+            'summary' => mb_substr($request->body, 0, 150, 'UTF-8')
+        ], $id);
+        // 若更新成功
+        if ($result) {
+            // 若品鉴有定义标签
+            if (($tags = $request->dynamicTags) && count($request->dynamicTags) <= 5) {
+                // 标签不存在,则新建之
+                $ids = collection($tags)->map(function ($tag) {
+                    return (new \App\Http\Frontend\Models\Tag)->firstOrCreate(['name' => $tag])->id;
+                });
+                $this->find($id)->updateTags($ids);
+            }
+            return $this->respondWith(['updated' => true]);
+        }
+        return $this->respondWith(['updated' => false]);
     }
 
     /**

@@ -402,8 +402,8 @@ class UserRepository extends Repository
     {
         $user = $this->with('profile')->where('name', $user)->first();
 
-        // 格式化作品数据
-        $poems = collection($user->poems)->map(function ($item) use ($user) {
+        // 格式化诗文数据
+        $poems = collect($user->poems)->map(function ($item) use ($user) {
             $poem = (new \App\Http\Frontend\Models\Poem())->with(['tags', 'comments.user.profile', 'comments' => function ($query) {
                 $query->orderBy('comments.created_at', 'desc');
             }])->find($item['id']);
@@ -412,6 +412,21 @@ class UserRepository extends Repository
             return $poem;
         });
         $work['poem'] = $this->transformModels($poems)
+        ->sortByDesc('pageviews_count')
+        ->values()
+        ->all();
+
+        // 格式化品鉴数据
+        $appreciations = collect($user->appreciations)->map(function ($item) use ($user) {
+            $appreciation = (new \App\Http\Frontend\Models\Appreciation())
+                ->with(['user.profile', 'tags', 'poem.user.profile', 'comments.user.profile', 'comments' => function ($query) {
+                    $query->orderBy('comments.created_at', 'desc');
+                }])->find($item['id']);
+
+            $appreciation['user'] = $user;
+            return $appreciation;
+        });
+        $work['appreciation'] = $this->transformModels($appreciations, 'appreciation')
             ->sortByDesc('pageviews_count')
             ->values()
             ->all();

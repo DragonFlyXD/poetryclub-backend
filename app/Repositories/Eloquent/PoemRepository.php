@@ -161,7 +161,7 @@ class PoemRepository extends Repository
             $query->orderBy('poems.pageviews_count', 'desc');
         }, 'user.profile.appreciations' => function ($query) {
             $query->orderBy('appreciations.pageviews_count', 'desc');
-        }, 'appreciations.user.profile', 'comments.user.profile', 'comments' => function ($query) {
+        }, 'tags', 'appreciations.user.profile', 'comments.user.profile', 'comments' => function ($query) {
             $query->orderBy('comments.created_at', 'desc');
         }])->find($id);
         // 页面浏览数 +1
@@ -195,7 +195,7 @@ class PoemRepository extends Repository
         $result = $this->update([
             'title' => $request->title,
             'body' => $request->body,
-            'category_id' => $this->category->findBy('name', $request->category)->id,
+            'category_id' => $request->category,
             'summary' => mb_substr($request->body, 0, 150, 'UTF-8')
         ], $id);
         // 若更新成功

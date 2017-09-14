@@ -52,4 +52,16 @@ class AppreciationController extends Controller
     {
         return $this->appreciation->show($appreciation);
     }
+
+    /**
+     * 更新指定品鉴
+     *
+     * @param StoreAppreciation $request
+     * @param $appreciation
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function update(StoreAppreciation $request, $appreciation)
+    {
+        return $this->appreciation->renew($request, $appreciation);
+    }
 }

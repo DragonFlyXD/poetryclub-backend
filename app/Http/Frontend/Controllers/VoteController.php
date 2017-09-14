@@ -64,6 +64,6 @@ class VoteController extends Controller
      */
     public function votedByAppreciation($appreciation)
     {
-        return $this->appreciation->vote($appreciation);
+        return $this->appreciation->voted($appreciation);
     }
 }
