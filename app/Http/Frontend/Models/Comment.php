@@ -2,6 +2,7 @@
 
 namespace App\Http\Frontend\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -38,6 +39,21 @@ class Comment extends Model
         'user_id', 'parent_id', 'body', 'commentable_id', 'commentable_type', 'level'
     ];
 
+    /**
+     * 数据模型的启动方法
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('hidden', function (Builder $builder) {
+            // 限制只能查询未隐藏的评论
+            $builder->where('is_hidden', 0);
+        });
+    }
+
     /*
     |--------------------------------------------------------------------------
     | 模型关联
@@ -56,5 +72,6 @@ class Comment extends Model
     {
         return $this->belongsTo(User::class);
     }
+
 
 }

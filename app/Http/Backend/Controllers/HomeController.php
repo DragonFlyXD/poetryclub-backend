@@ -3,15 +3,21 @@
 namespace App\Http\Backend\Controllers;
 
 use App\Http\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
 
     public function index()
     {
-        return view('admin.home');
+        // 统计用户、诗文与品鉴的总数
+        $data['user_count'] = (new \App\Http\Frontend\Models\User())->count();
+        $data['poem_count'] = (new \App\Http\Frontend\Models\Poem())->newQueryWithoutScope('show')->count();
+        $data['appreciation_count'] = (new \App\Http\Frontend\Models\Appreciation())->newQueryWithoutScope('show')->count();
+        // 获取最近添加的诗文与品鉴,最近注册的用户
+        $data['users'] = (new \App\Http\Frontend\Models\User())->latest()->limit(10)->get();
+        $data['poems'] = (new \App\Http\Frontend\Models\Poem())->newQueryWithoutScope('show')->latest()->limit(10)->get();
+        $data['appreciations'] = (new \App\Http\Frontend\Models\Appreciation())->newQueryWithoutScope('show')->latest()->limit(10)->get();
+        return view('admin.home', ['data' => $data]);
     }
 
     /**

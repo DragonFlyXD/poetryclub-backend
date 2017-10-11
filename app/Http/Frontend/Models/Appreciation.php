@@ -50,12 +50,21 @@ class Appreciation extends Model
         'user_id', 'poem_id', 'category_id', 'title', 'body', 'summary', 'is_original'
     ];
 
+    /**
+     * 数据模型的启动方法
+     *
+     * @return void
+     */
     protected static function boot()
     {
         parent::boot();
-        // 限制只能查询有效的品鉴
-        static::addGlobalScope('is_valid', function (Builder $builder) {
-            $builder->where('is_valid', 1);
+
+        static::addGlobalScope('show', function (Builder $builder) {
+            // 限制只能查询有效且未隐藏的品鉴
+            $builder->where([
+                ['is_valid', 1],
+                ['is_hidden', 0]
+            ]);
         });
     }
 
@@ -101,8 +110,18 @@ class Appreciation extends Model
     }
 
     /**
+     * 获取该品鉴所属的用户的个人信息
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'user_id', 'user_id');
+    }
+
+    /**
      * 获取该品鉴所属的品鉴模型
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function poem()

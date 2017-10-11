@@ -1,0 +1,42 @@
+@import '../../../../stylus/common'
+
+.df-loginForm
+  z-index 999
+  wh(30vw, 50vh)
+  .is-error input
+    border-color Silver !important
+  .el-form-item__error
+    color Red
+  .el-input-group__prepend
+    padding-left 15px
+    border-color Silver
+    bc(transparent, White)
+  .el-checkbox__inner:hover,.el-checkbox__inner:focus,.el-checkbox__inner:visited
+    border-color Green !important
+  .is-checked
+    span
+      border-color Green !important
+      background-color Green !important
+      transition all .3s ease
+  input
+    padding 20px 0
+    border-left 0
+    border-color Silver
+    bc(transparent, Green)
+    &:hover
+      border-color Silver
+    &:focus
+      border-color Silver
+  .title
+    padding 20px 0
+    font-size 1.5em
+    text-align center
+    color Green
+  .publish
+    width 100%
+  .misc
+    fj(space-between)
+    .forget
+      text-decoration none
+    a,span
+      color Green

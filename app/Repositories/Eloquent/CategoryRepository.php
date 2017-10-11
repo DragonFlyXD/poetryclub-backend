@@ -19,20 +19,38 @@ class CategoryRepository extends Repository
      * 获取分类列表
      *
      * @param string $query
+     * @param bool $isPaginate
      * @return mixed
      */
-    public function index($query = '')
+    public function index($query = '', $isPaginate = false)
     {
-        // 若为展示分类列表
-        if (!$query) {
-            $categories = $this->all()->toArray();
+        // 是否需要分页展示
+        if ($isPaginate) {
+            if (!$query) {
+                // 若无查询参数
+                $categories = $this->model
+                    ->orderBy('created_at', 'desc')->paginate(10)->toArray();
+            } else {
+                // 若有查询参数
+                $categories = $this->model
+                    ->where('name', 'like', "%$query%")
+                    ->paginate(10)
+                    ->toArray();
+            }
         } else {
-            // 若有查询参数
-            $categories = $this->model
-                ->where('name', 'like', "%$query%")
-                ->get()
-                ->toArray();
+            if (!$query) {
+                // 若无查询参数
+                $categories = $this->model
+                    ->orderBy('created_at', 'desc')->get()->toArray();
+            } else {
+                // 若有查询参数
+                $categories = $this->model
+                    ->where('name', 'like', "%$query%")
+                    ->get()
+                    ->toArray();
+            }
         }
+
         return $categories;
     }
 

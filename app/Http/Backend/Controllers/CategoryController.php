@@ -21,29 +21,30 @@ class CategoryController extends Controller
         $this->category = $category;
     }
 
+    /**
+     * 返回显示分类列表的视图
+     *
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function index()
     {
-        $categories = collect($this->category->index())->toJson();
+        $categories = collection($this->category->index('', true))->toJson();
         return view('admin.category.index', ['categories' => $categories]);
     }
 
+    /**
+     * 根据关键字搜索分类
+     *
+     * @param Request $request
+     * @return mixed
+     */
     public function search(Request $request)
     {
-        return $this->category->index($request->query('query'));
+        return $this->category->index($request->query('query'), true);
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * 存储分类
      *
      * @param StoreCategory $request
      * @return \Illuminate\Http\Response
@@ -54,7 +55,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * 获取指定ID的分类
      *
      * @param  int $id
      * @return \Illuminate\Http\Response
@@ -66,7 +67,7 @@ class CategoryController extends Controller
 
 
     /**
-     * Update the specified resource in storage.
+     * 更新分类
      *
      * @param StoreCategory $request
      * @param  int $id

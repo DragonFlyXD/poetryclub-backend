@@ -27,25 +27,43 @@ class PoemController extends Controller
 
 
     /**
-     * Display a listing of the resource.
+     * 返回诗文列表的视图
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function index()
     {
-        $poems = collect($this->poem->index())->toJson();
+        $poems = collection($this->poem->index())->toJson();
         return view('admin.poem.index', ['poems' => $poems]);
     }
 
+    /**
+     * 返回显示诗文详情的视图
+     *
+     * @param $poem
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
+    public function show($poem)
+    {
+        $poem = $this->poem->show($poem);
+        return view('admin.poem.view', ['poem' => $poem]);
+    }
+
+    /**
+     * 根据关键字查找诗文
+     *
+     * @param Request $request
+     * @return mixed
+     */
     public function search(Request $request)
     {
         return $this->poem->index($request->query("query"));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * 返回创建诗文的视图
      *
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
     public function create()
     {
@@ -53,7 +71,7 @@ class PoemController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * 添加诗文
      *
      * @param StorePoem $request
      * @return \Illuminate\Http\Response
@@ -65,7 +83,7 @@ class PoemController extends Controller
 
 
     /**
-     * Show the form for editing the specified resource.
+     * 返回编辑诗文的视图
      *
      * @param  int $id
      * @return \Illuminate\Http\Response
@@ -77,19 +95,19 @@ class PoemController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * 更新诗文
      *
-     * @param  \Illuminate\Http\Request $request
+     * @param StorePoem $request
      * @param  int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(StorePoem $request, $id)
     {
         return $this->poem->renew($request, $id);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * 删除诗文
      *
      * @param  int $id
      * @return \Illuminate\Http\Response
@@ -99,6 +117,12 @@ class PoemController extends Controller
         return $this->poem->destroy($id);
     }
 
+    /**
+     * 删除诗文集合
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function multipleDestroy(Request $request)
     {
         return $this->poem->destroy($request->all());

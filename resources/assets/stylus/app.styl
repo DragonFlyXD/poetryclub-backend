@@ -60,26 +60,69 @@ body, html
 .df-main
   fj()
   height 100%
+  .df-nav
+    min-height 100%
+    a
+      text-decoration none
+      .is-active
+        color Green
+      i
+        margin-right 5px
+        color Green
+  .df-content
+    width 100%
+    padding 20px
+    .breadcrumb
+      margin-bottom 20px
+      a
+        text-decoration none
+        &:hover
+          color Orange !important
 
-/* nav */
-.df-nav
-  height 100%
-  a
-    text-decoration none
-    .is-active
-      color Green
-    i
-      margin-right 5px
-      color Green
-
-/* content */
-.df-content
-  width 100%
-  padding 20px
-  .breadcrumb
-    margin-bottom 20px
-    a:hover
-      color Orange !important
+/* home */
+.df-home
+  .statistics
+    fj()
+    .box
+      fj()
+      flex-direction column
+      width 25%
+      margin-right 50px
+      padding 20px
+      border 1px solid Extra-Light-Grey
+      border-radius 3px
+      text-align center
+      i
+        font-size 5em
+        color Green
+        &:hover
+          cursor pointer
+          animation tfIcon 4s ease
+      span
+        margin-top 20px
+        font-size 2em
+        color Silver
+  .main
+    fj(space-between)
+    margin-top 50px
+    .lately
+      width 25%
+      .billboard
+        margin-bottom 20px
+        border-bottom 1px solid Extra-Light-Grey
+        color Silver
+        i
+          margin-right 20px
+          color Red
+      .item
+        fj(space-between)
+        margin 10px 0
+        .publish-time
+          font-size .7em
+          color Silver
+        .avatar
+          wh(40px,40px)
+          border-radius 40px
 
 /* user */
 .df-user-wrapper
@@ -111,3 +154,27 @@ body, html
         color Green
         .default
           color Orange
+
+/* 诗文详情 */
+.df-poemView
+  fj(center, center)
+  flex-direction column
+  padding 20px
+  border 1px solid Extra-Light-Grey
+  color Silver
+  .title
+    margin 10px 0
+    font-size 2em
+  .info
+    fj()
+    font-size .8em
+    .item
+      margin-right 10px
+      i
+        margin-right 5px
+  .main
+    padding 20px 0
+    word-break break-all
+  a
+    text-decoration none
+    color Green

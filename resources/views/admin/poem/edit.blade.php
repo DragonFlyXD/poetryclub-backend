@@ -9,8 +9,5 @@
 @endsection
 
 @section('content')
-    <data-form
-        :is_edit="true"
-        edit_form="{{ $poem }}"
-    ></data-form>
+    <poem-form poem="{{ $poem }}"></poem-form>
 @endsection

@@ -9,7 +9,5 @@
 @endsection
 
 @section('content')
-    <cate-table
-        paginate="{{ $categories }}"
-    ></cate-table>
+    <category-table paginate="{{ $categories }}"></category-table>
 @endsection

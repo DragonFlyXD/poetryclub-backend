@@ -66,17 +66,17 @@
                 </el-menu-item>
             </a>
         </el-menu>
-        <section class="df-content">
+        <div class="df-content">
             <el-breadcrumb class="breadcrumb" separator="❤️">
                 <el-breadcrumb-item>
-                    <a class="custom-a" href="{{ url('admin') }}">
+                    <a href="{{ url('admin') }}">
                         <i class="fa fa-home"></i>首页
                     </a>
                 </el-breadcrumb-item>
                 @yield('breadcrumb')
             </el-breadcrumb>
             @yield('content')
-        </section>
+        </div>
     </div>
 </div>
 <script src="{{ mix('backend/js/app.js') }}"></script>

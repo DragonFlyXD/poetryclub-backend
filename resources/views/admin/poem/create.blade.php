@@ -9,5 +9,5 @@
 @endsection
 
 @section('content')
-    <data-form></data-form>
+    <poem-form></poem-form>
 @endsection

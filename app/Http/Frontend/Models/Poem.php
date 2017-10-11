@@ -8,7 +8,7 @@ use Laravel\Scout\Searchable;
 
 /**
  * Poem Model
- * 
+ *
  * Class Poem
  *
  * @package App\Http\Frontend\Models
@@ -70,13 +70,22 @@ class Poem extends Model
         'user_id', 'category_id', 'title', 'body', 'summary', 'dynasty', 'is_original'
     ];
 
-    protected static function boot()
+    /**
+     * 数据模型的启动方法
+     *
+     * @return void
+     */
+    public static function boot()
     {
         parent::boot();
-        // 限制只能查询有效的诗文
-//        static::addGlobalScope('is_valid', function (Builder $builder) {
-//            $builder->where('is_valid', 1);
-//        });
+
+        static::addGlobalScope('show', function (Builder $builder) {
+            // 限制只能查询有效且未隐藏的诗文
+            $builder->where([
+                ['is_valid', 1],
+                ['is_hidden', 0]
+            ]);
+        });
     }
 
     /**
@@ -118,6 +127,16 @@ class Poem extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * 获取该诗文所属的用户的个人信息
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function profile()
+    {
+        return $this->hasOne(Profile::class, 'user_id', 'user_id');
     }
 
     /**
@@ -219,7 +238,7 @@ class Poem extends Model
      * @param $tags
      * @return array
      */
-     public function storeTags($tags)
+    public function storeTags($tags)
     {
         return $this->tags()->attach($tags);
     }

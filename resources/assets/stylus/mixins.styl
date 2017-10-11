@@ -1,6 +1,6 @@
 Green = #42b983
 Light-Green = #87d86b
-Write = #FFF
+White = #FFF
 Dark-White = #F9FAFC
 Red = #FF7352
 Blue = #64c0ff
@@ -9,9 +9,9 @@ Light-Orange = #ffc741
 Silver = #8492A6
 Light-Silver = #99A9BF
 Extra-Light-Silver = #C0CCDA
-Gray = #D3DCE6
-Light-Gray = #E5E9F2
-Extra-Light-Gray = #EFF2F7
+Grey = #D3DCE6
+Light-Grey = #E5E9F2
+Extra-Light-Grey = #EFF2F7
 Black = #1F2D3D
 Light-Black = #324057
 Extra-Light-Black = #475669
@@ -29,18 +29,35 @@ bc(bgC=Green,c=Write)
   color c
   background-color bgC
 
+bdco(bdc=Green,c=Green)
+  border-color bdc
+  color c
+
+font(s,c)
+  font-size s
+  color c
+
+
+txtline(w=40%)
+  position relative
+  font-size .8em
+  letter-spacing 1px
+  text-align center
+  color Green
+  &::before
+    position absolute
+    top 50%
+    left 0
+    wh(w,1px)
+    background-color Light-Green
+    content ''
+  &::after
+    position absolute
+    top 50%
+    right 0
+    wh(w,1px)
+    background-color Light-Green
+    content ''
+
 mgreen(o=1)
   rgba(66,185,131,o)
-
-
-/* 自定义游览器滚动条 */
-scrollBar()
-  &::-webkit-scrollbar
-    width 6px
-  &::-webkit-scrollbar-thumb
-    background-color Silver
-    border-radius 20px
-  &::-webkit-scrollbar-track-piece
-    background-color Gray
-
-/* 自定义表单 */

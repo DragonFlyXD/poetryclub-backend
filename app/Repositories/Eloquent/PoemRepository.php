@@ -36,7 +36,7 @@ class PoemRepository extends Repository
      * @param $query
      * @return mixed
      */
-    public function index($query)
+    public function index($query = '')
     {
         // 获取分页数据
         if (!$query) {
@@ -58,11 +58,11 @@ class PoemRepository extends Repository
         // 格式化诗文数据
         $poems = collect($paginate['data'])
             ->map(function ($item) {
-            // 这样预加载性能不友好,暂时不知道有什么方法... (查询耗费平均时间: 50ms)
-            return $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
-                $query->orderBy('comments.created_at', 'desc');
-            }])->find($item['id']);
-        });
+                return $this->with(['user.profile.poems', 'tags', 'comments.user.profile', 'comments' => function ($query) {
+                    $query->orderBy('comments.created_at', 'desc');
+                }])->find($item['id']);
+            });
+
         $paginate['data'] = $this->transformModels($poems)
             ->all();
 
