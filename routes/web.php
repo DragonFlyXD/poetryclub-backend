@@ -28,11 +28,17 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Backend\Controllers', 'middle
         Route::resource('user', 'UserController');
 
         // 诗文相关
-        Route::delete('poem/destroy', 'PoemController@multipleDestroy');    // 多选删除
+        Route::post('poem/destroy', 'PoemController@multipleDestroy');    // 多选删除
         Route::get('poem/search', 'PoemController@search');
         Route::resource('poem', 'PoemController');
 
+        // 品鉴相关
+        Route::post('appreciation/destroy', 'AppreciationController@multipleDestroy');    // 多选删除
+        Route::get('appreciation/search', 'AppreciationController@search');
+        Route::resource('appreciation', 'AppreciationController');
+
         // 分类相关
+        Route::post('category/destroy', 'CategoryController@multipleDestroy');    // 多选删除
         Route::get('category/search', 'CategoryController@search');
         Route::resource('category', 'CategoryController');
 

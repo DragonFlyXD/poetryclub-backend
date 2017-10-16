@@ -28,7 +28,7 @@ class StoreAppreciation extends FormRequest
             'category' => ['required', 'numeric'],
             'title' => ['required', 'between:1,50'],
             'body' => ['required'],
-            'dynamicTags' => ['array', 'between:1,5']
+            'dynamicTags' => ['array', 'between:0,5']
         ];
     }
 
@@ -38,7 +38,7 @@ class StoreAppreciation extends FormRequest
             'poem.required' => '被品鉴诗文ID不能为空。',
             'poem.numeric' => '被品鉴诗文ID必须为数字',
             'dynamicTags.array' => '标签类型错误。',
-            'dynamicTags.between' => '标签数量必须介于1-5个之间。'
+            'dynamicTags.between' => '标签数量必须介于0-5个之间。'
         ];
     }
 }

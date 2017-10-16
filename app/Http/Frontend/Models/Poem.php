@@ -81,10 +81,11 @@ class Poem extends Model
 
         static::addGlobalScope('show', function (Builder $builder) {
             // 限制只能查询有效且未隐藏的诗文
-            $builder->where([
-                ['is_valid', 1],
-                ['is_hidden', 0]
-            ]);
+            $builder
+                ->where([
+                    ['is_valid', 1],
+                    ['is_hidden', 0]
+                ]);
         });
     }
 

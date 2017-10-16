@@ -1,9 +1,27 @@
 <template lang="html">
-    <div class="df-poemForm">
+    <div class="df-appreciationForm">
         <el-form class="c-form main" ref="form" :model="form" :rules="rules">
+            <el-form-item prop="poem">
+                <el-select
+                        class="c-select poem"
+                        popper-class="c-popper"
+                        v-model="form.poem"
+                        filterable
+                        placeholder="请输入要被品鉴的诗文标题"
+                        no-data-text="来个诗文标题~"
+                        :filter-method="fetchPoem"
+                >
+                    <el-option
+                            v-for="(poem, index) in poems"
+                            :key="index"
+                            :value="poem.id"
+                            :label="poem.title"
+                    ></el-option>
+                </el-select>
+            </el-form-item>
             <el-form-item prop="title">
                 <el-input
-                        placeholder="诗文标题，1-50个字符之间。"
+                        placeholder="品鉴标题，1-50个字符之间。"
                         v-model="form.title"
                 ></el-input>
             </el-form-item>
@@ -79,12 +97,18 @@
 <script>
     import {quillEditor} from 'vue-quill-editor'
     export default {
-        name: 'poemForm',
+        name: 'appreciationForm',
         components: {
             quillEditor
         },
         props: {
             // 默认表单数据,JSON字符串
+            appreciation: {
+                type: String,
+                required: false,
+                default: null
+            },
+            // 编辑页面时,品鉴的源诗文
             poem: {
                 type: String,
                 required: false,
@@ -95,21 +119,31 @@
             return {
                 isEditPage: false,// 是否为编辑页面
                 form: {
+                    poem: null, // 品鉴的源诗文ID
                     title: '', // 标题
                     category: '', // 分类ID
                     dynamicTags: [], // 标签
-                    body: '' // 诗文内容
+                    body: '' // 品鉴内容
                 },
+                poems: [],  // 原创搜索的诗文列表
                 categories: [], // 分类列表
                 iptVisible: false,
                 iptValue: '',
                 editorOptions: { // quill 编辑器配置
                     theme: 'bubble',
-                    placeholder: '诗文内容，支持Markdown语法。'
+                    placeholder: '品鉴内容，支持Markdown语法。'
                 },
                 isLoading: false,  // 按钮是否在加载
                 dialogVisible: false,
                 rules: { // 表单验证规则
+                    poem: [
+                        {
+                            required: true,
+                            type: 'number',
+                            message: '被品鉴的诗文标题不能为空',
+                            trigger: 'change'
+                        }
+                    ],
                     title: [
                         {
                             required: true,
@@ -143,6 +177,9 @@
         },
         computed: {
             localEditForm() {
+                return JSON.parse(this.appreciation)
+            },
+            localEditPoem() {
                 return JSON.parse(this.poem)
             }
         },
@@ -151,6 +188,12 @@
             this.checkoutPage()
         },
         methods: {
+            // 远程获取诗文列表
+            fetchPoem(queryStr = '') {
+                axios.get(`poem/search?query=${queryStr}`).then(response => {
+                    this.poems = response.data.data
+                })
+            },
             // 远程获取分类列表
             fetchCategory(queryStr = '') {
                 axios.get(`category/search?query=${queryStr}`).then(response => {
@@ -181,7 +224,7 @@
                     } else if (this.form.dynamicTags.length >= 5) {
                         // 若标签数大于5
                         this.$message({
-                            message: '旅行者，诗文最大标签数不能大于5。',
+                            message: '旅行者，品鉴最大标签数不能大于5。',
                             type: 'error',
                             customClass: 'c-msg'
                         })
@@ -200,19 +243,19 @@
                                 this.isLoading = true
                                 if (this.isEditPage) {
                                     const id = location.pathname.match(/(\d+)/)[1]
-                                    axios.put(`poem/${id}`, this.form).then(response => {
+                                    axios.put(`appreciation/${id}`, this.form).then(response => {
                                         this.isLoading = false
-                                        // 诗文更新成功
+                                        // 品鉴更新成功
                                         if (response.data.updated) {
                                             this.$message({
-                                                message: '诗文更新成功。',
+                                                message: '品鉴更新成功。',
                                                 type: 'success',
                                                 customClass: 'c-msg'
                                             })
-                                            location.href = `http://www.dragonflyxd.com/admin/poem/${id}`
+                                            location.href = `http://www.dragonflyxd.com/admin/appreciation/${id}`
                                         } else {
                                             this.$message({
-                                                message: '诗文更新失败。',
+                                                message: '品鉴更新失败。',
                                                 type: 'error',
                                                 customClass: 'c-msg'
                                             })
@@ -229,16 +272,16 @@
                                         Promise.reject(error)
                                     })
                                 } else {
-                                    axios.post('poem', this.form).then(response => {
+                                    axios.post('appreciation', this.form).then(response => {
                                         this.isLoading = false
-                                        // 诗文创建成功
+                                        // 品鉴创建成功
                                         if (response.data.created) {
                                             this.$message({
-                                                message: '诗文创建成功。',
+                                                message: '品鉴创建成功。',
                                                 type: 'success',
                                                 customClass: 'c-msg'
                                             })
-                                            location.href = `http://www.dragonflyxd.com/admin/poem/${response.data.poem.id}`
+                                            location.href = `http://www.dragonflyxd.com/admin/appreciation/${response.data.appreciation.id}`
                                         } else if (response.status === 422) {
                                             // 参数错误
                                             this.$message({
@@ -273,13 +316,16 @@
             },
             // 判断该页面是否为编辑页面
             checkoutPage() {
-                if (location.pathname !== '/admin/poem/create') {
+                if (location.pathname !== '/admin/appreciation/create') {
                     this.isEditPage = true
                     const matched = [
-                        'title', 'dynamicTags', 'category', 'body'
+                        'poem', 'title', 'dynamicTags', 'category', 'body'
                     ]
                     matched.forEach(item => {
-                        if (item === 'category') {
+                        if (item === 'poem') {
+                            this.poems.push(this.localEditPoem)
+                            this.form.poem = this.localEditPoem.id
+                        } else if (item === 'category') {
                             axios.get('category/search').then(response => {
                                 this.categories = response.data
                                 this.categories.some(category => {

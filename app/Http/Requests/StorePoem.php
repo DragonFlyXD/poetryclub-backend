@@ -27,7 +27,7 @@ class StorePoem extends FormRequest
             'category' => ['required', 'numeric'],
             'title' => ['required', 'between:1,50'],
             'body' => ['required'],
-            'dynamicTags' => ['array', 'between:1,5']
+            'dynamicTags' => ['array', 'between:0,5']
         ];
     }
 
@@ -35,7 +35,7 @@ class StorePoem extends FormRequest
     {
         return [
             'dynamicTags.array' => '标签类型错误。',
-            'dynamicTags.between' => '标签数量必须介于1-5个之间。'
+            'dynamicTags.between' => '标签数量必须介于0-5个之间。'
         ];
     }
 }

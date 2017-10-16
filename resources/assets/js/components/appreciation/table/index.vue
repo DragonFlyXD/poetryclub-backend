@@ -3,23 +3,23 @@
         <header class="header">
             <el-input
                     class="search c-form"
-                    placeholder="请输入诗文标题..."
+                    placeholder="请输入品鉴标题..."
                     icon="search"
                     v-model="query"
                     :on-icon-click="search"
                     @keyup.enter.native="search"
             ></el-input>
             <div class="actions">
-                <el-button class="add" @click="createPoem">
+                <el-button class="add" @click="createAppreciation">
                     <i class="fa fa-plus"></i>
                 </el-button>
-               <el-button class="edit" @click="editPoem">
+               <el-button class="edit" @click="editAppreciation">
                     <i class="fa fa-edit"></i>
                 </el-button>
                 <el-button
                         class="destroy"
                         :loading="isMultipleDeleting"
-                        @click="deleteMultiplePoem"
+                        @click="deleteMultipleAppreciation"
                 ><i class="fa fa-trash"></i>
                 </el-button>
                 <el-button class="refresh" @click="refresh">
@@ -43,8 +43,8 @@
                         <el-form-item label="作者">
                             <span>{{ scope.row.authorName }}</span>
                         </el-form-item>
-                        <el-form-item label="朝代">
-                            <span>{{ scope.row.dynasty }}</span>
+                        <el-form-item label="源诗文">
+                            <span>{{ scope.row.poem ? scope.row.poem.title : 'NULL' }}</span>
                         </el-form-item>
                         <el-form-item>
                             <h3>内容</h3>
@@ -66,10 +66,13 @@
                     prop="title"
                     label="标题"
             ></el-table-column>
-            <el-table-column
-                    prop="dynasty"
-                    label="朝代"
-            ></el-table-column>
+            <el-table-column label="源诗文">
+                <template scope="scope">
+                    <a class="btn-default" :href="scope.row.poem ? '/admin'+ scope.row.poem.poemUrl : '#'">
+                        {{ scope.row.poem ? scope.row.poem.title : 'NULL' }}
+                    </a>
+                </template>
+            </el-table-column>
             <el-table-column label="是否发布">
                 <template scope="scope">
                     <el-tag
@@ -108,12 +111,12 @@
             ></el-table-column>
             <el-table-column label="操作" class-name="actions">
                 <template scope="scope">
-                    <el-button class="btn-pub" @click="editPoem(scope.row.id)">
+                    <el-button class="btn-pub" @click="editAppreciation(scope.row.id)">
                         <i class="fa fa-edit"></i>
                     </el-button>
                     <el-button
                             class="btn-can"
-                            @click="deletePoem(scope.row.id,scope.$index)"
+                            @click="deleteAppreciation(scope.row.id,scope.$index)"
                     ><i class="fa fa-trash"></i>
                     </el-button>
                 </template>
@@ -133,7 +136,7 @@
 
 <script>
     export default {
-        name: 'poemTable',
+        name: 'appreciationTable',
         props: ['paginate'],
         data() {
             return {
@@ -153,11 +156,11 @@
             },
             // 跳转到指定页码的页面
             handleCurrentChange(val) {
-                location.href = `http://www.dragonflyxd.com/admin/poem?page=${val}`
+                location.href = `http://www.dragonflyxd.com/admin/appreciation?page=${val}`
             },
-            // 查找诗文
+            // 查找品鉴
             search() {
-                axios.get(`poem/search?query=${this.query}`).then(response => {
+                axios.get(`appreciation/search?query=${this.query}`).then(response => {
                     this.getLocalData(response.data)
                 }).catch(error => {
                     this.$message({
@@ -174,33 +177,33 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val
             },
-            // 创建诗文
-            createPoem() {
-                location.href = 'http://www.dragonflyxd.com/admin/poem/create'
+            // 创建品鉴
+            createAppreciation() {
+                location.href = 'http://www.dragonflyxd.com/admin/appreciation/create'
             },
-            // 编辑诗文
-            editPoem(id) {
+            // 编辑品鉴
+            editAppreciation(id) {
                 if (typeof id === 'number') {
-                    location.href = `http://www.dragonflyxd.com/admin/poem/${id}/edit`
+                    location.href = `http://www.dragonflyxd.com/admin/appreciation/${id}/edit`
                 } else {
                     const msLen = this.multipleSelection.length
                     if (msLen) {
-                        const poemId = this.multipleSelection[msLen - 1].id
-                        location.href = `http://www.dragonflyxd.com/admin/poem/${poemId}/edit`
+                        const apprecId = this.multipleSelection[msLen - 1].id
+                        location.href = `http://www.dragonflyxd.com/admin/appreciation/${apprecId}/edit`
                     } else {
                         this.$message({
-                            message: '请选择要编辑的诗文。',
+                            message: '请选择要编辑的品鉴。',
                             type: 'warning',
                             customClass: 'c-msg'
                         })
                     }
                 }
             },
-            // 删除多选的诗文
-            deleteMultiplePoem(){
+            // 删除多选的品鉴
+            deleteMultipleAppreciation(){
                 // 若有选择
                 if (this.multipleSelection.length) {
-                    this.$confirm('此操作将永久删除选中的诗文,是否继续?', '提示', {
+                    this.$confirm('此操作将永久删除选中的品鉴,是否继续?', '提示', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
                         confirmButtonClass: 'btn-pub',
@@ -211,7 +214,7 @@
                         const ids = this.multipleSelection.map(item => {
                             return item.id
                         })
-                        axios.post('poem/destroy', ids).then(response => {
+                        axios.post('appreciation/destroy', ids).then(response => {
                             this.isMultipleDeleting = false
                             // 若删除成功
                             if (response.data.deleted) {
@@ -254,16 +257,16 @@
                     })
                 }
             },
-            // 删除诗文
-            deletePoem(id, index) {
-                this.$confirm('此操作将永久删除该诗文,是否继续?', '提示', {
+            // 删除品鉴
+            deleteAppreciation(id, index) {
+                this.$confirm('此操作将永久删除该品鉴,是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     confirmButtonClass: 'btn-pub',
                     cancelButtonClass: 'btn-can',
                     type: 'warning'
                 }).then(()=> {
-                    axios.delete(`poem/${id}`).then(response => {
+                    axios.delete(`appreciation/${id}`).then(response => {
                         // 若删除成功
                         if (response.data.deleted) {
                             // 删除表格数据里选中项

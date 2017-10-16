@@ -2,7 +2,9 @@
 
 namespace App\Http\Frontend\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Http\Frontend\Models\Category
@@ -19,7 +21,13 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Category extends Model
 {
+
+    use SoftDeletes;
+
     protected $fillable = [
         'name'
     ];
+
+    protected $dates = ['deleted_at'];
+
 }

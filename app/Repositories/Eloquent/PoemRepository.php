@@ -143,9 +143,8 @@ class PoemRepository extends Repository
                 });
                 $poem->storeTags($ids);
             }
-            return $this->respondWith(['created' => $result, 'poem' => $poem]);
         }
-        return $this->respondWith(['created' => $result]);
+        return $this->respondWith(['created' => $result, 'poem' => $poem]);
     }
 
     /**
@@ -164,10 +163,13 @@ class PoemRepository extends Repository
         }, 'tags', 'appreciations.user.profile', 'comments.user.profile', 'comments' => function ($query) {
             $query->orderBy('comments.created_at', 'desc');
         }])->find($id);
-        // 页面浏览数 +1
-        $poem->increment('pageviews_count');
-        return $this->transformModel($poem)
-            ?: $this->errorNotFound();
+
+        if ($poem) {
+            $poem->increment('pageviews_count');
+            return $this->transformModel($poem);
+        } else {
+            return $this->errorNotFound();
+        }
     }
 
     /**
@@ -203,8 +205,11 @@ class PoemRepository extends Repository
     public function edit($id)
     {
         $poem = $this->with(['user.profile.poems', 'tags'])->find($id);
-        return $this->transformModel($poem)
-            ?: $this->errorNotFound();
+        if (!$poem) {
+            return $this->errorNotFound();
+        } else {
+           return $this->transformModel($poem);
+        }
     }
 
     /**
@@ -232,23 +237,27 @@ class PoemRepository extends Repository
                 });
                 $this->find($id)->updateTags($ids);
             }
-            return $this->respondWith(['updated' => true]);
         }
-        return $this->respondWith(['updated' => false]);
+        return $this->respondWith(['updated' => !!$result]);
     }
 
     /**
      * 删除诗文
      *
-     * @param $id
+     * @param $ids
      * @return \Illuminate\Http\JsonResponse
      */
-    public function destroy($id)
+    public function destroy($ids)
     {
-        $userId = id() ?: id('web');
-        // 若删除成功,作品总数 -1
-        if ($result = !!$this->delete($id)) {
-            (new \App\Http\Frontend\Models\User())->find($userId)->decrement('works_count');
+        // 获取作者ID
+        $userIds = collection($ids)->map(function ($id) {
+            return $this->find($id)->user_id;
+        });
+        // 若删除成功,该作者的作品总数 -1
+        if ($result = !!$this->delete($ids)) {
+            $userIds->map(function ($id) {
+                (new \App\Http\Frontend\Models\User())->find($id)->decrement('works_count');
+            });
         }
         return $this->respondWith(['deleted' => $result]);
     }

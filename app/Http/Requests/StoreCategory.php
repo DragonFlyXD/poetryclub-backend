@@ -24,7 +24,8 @@ class StoreCategory extends FormRequest
     public function rules()
     {
         return [
-            'name' => ['required', 'between:1,50', 'unique:categories']
+            'name' => ['required', 'between:1,50', 'unique:categories'],
+            'is_submit' => ['required']
         ];
     }
 
@@ -33,7 +34,8 @@ class StoreCategory extends FormRequest
         return [
             'name.required' => '分类名不能为空。',
             'name.between' => '分类名必须介于1-50个字符之间。',
-            'name.unique' => '分类名已存在。'
+            'name.unique' => '分类名已存在。',
+            'is_submit.required' => '防止AJAX验证数据而误将数据保存进数据库。'
         ];
     }
 }

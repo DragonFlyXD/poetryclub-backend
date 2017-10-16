@@ -4,25 +4,22 @@ namespace App\Http\Backend\Controllers;
 
 use App\Http\Controller;
 use App\Http\Requests\StorePoem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Repositories\Eloquent\PoemRepository as Poem;
-use App\Repositories\Eloquent\CategoryRepository as Category;
 
 class PoemController extends Controller
 {
 
     protected $poem;
-    protected $category;
 
     /**
      * PoemController constructor.
      * @param Poem $poem
-     * @param Category $category
      */
-    public function __construct(Poem $poem, Category $category)
+    public function __construct(Poem $poem)
     {
         $this->poem = $poem;
-        $this->category = $category;
     }
 
 
@@ -46,6 +43,9 @@ class PoemController extends Controller
     public function show($poem)
     {
         $poem = $this->poem->show($poem);
+        if ($poem instanceof JsonResponse && $poem->getStatusCode() === 404) {
+            return abort('404');
+        }
         return view('admin.poem.view', ['poem' => $poem]);
     }
 
@@ -91,6 +91,9 @@ class PoemController extends Controller
     public function edit($id)
     {
         $poem = $this->poem->edit($id);
+        if ($poem instanceof JsonResponse && $poem->getStatusCode() === 404) {
+            return abort('404');
+        }
         return view('admin.poem.edit', ['poem' => $poem]);
     }
 

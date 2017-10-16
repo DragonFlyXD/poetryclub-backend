@@ -24,6 +24,10 @@ import LoginForm from './components/login/form'  // 登录表单
 import PoemTable from './components/poem/table'  // 表格
 import PoemForm from './components/poem/form'    // 表单
 
+// 品鉴相关
+import AppreciationTable from './components/appreciation/table'  // 表格
+import AppreciationForm from './components/appreciation/form'  // 表单
+
 // 分类相关
 import CategoryTable from './components/category/table'
 
@@ -39,6 +43,8 @@ new Vue({
         LoginForm,
         PoemTable,
         PoemForm,
+        AppreciationTable,
+        AppreciationForm,
         CategoryTable,
         UserTable,
         Dot,

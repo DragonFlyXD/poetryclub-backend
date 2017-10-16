@@ -2,6 +2,8 @@
 
 namespace App\Repositories\Eloquent;
 
+use Illuminate\Support\Facades\App;
+
 class CategoryRepository extends Repository
 {
 
@@ -41,7 +43,10 @@ class CategoryRepository extends Repository
             if (!$query) {
                 // 若无查询参数
                 $categories = $this->model
-                    ->orderBy('created_at', 'desc')->get()->toArray();
+                    ->withTrashed()
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->toArray();
             } else {
                 // 若有查询参数
                 $categories = $this->model
@@ -78,19 +83,32 @@ class CategoryRepository extends Repository
             'name' => $request->get('name')
         ], $id);
 
-        return $this->respondWith(['updated' => $result ? true : false]);
+        return $this->respondWith(['updated' => !!$result]);
     }
 
+    /**
+     * 新添分类
+     *
+     * @param $request
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
     public function store($request)
     {
         $category = $this->create([
             'name' => $request->get('name')
         ]);
 
-        if ($category) {
-            return $this->respondWith(['created' => true, 'data' => $category]);
-        } else {
-            return $this->respondWith(['created' => false]);
-        }
+        return $this->respondWith(['created' => !!$category, 'category' => $category]);
+    }
+
+    /**
+     * 删除分类
+     *
+     * @param $ids
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function destroy($ids)
+    {
+        return $this->respondWith(['deleted' => !!$this->delete($ids)]);
     }
 }

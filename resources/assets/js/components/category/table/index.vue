@@ -10,10 +10,10 @@
                     @keyup.enter.native="search"
             ></el-input>
             <div class="actions">
-                <el-button class="add" @click="createCategory">
+                <el-button class="add" @click="toggleCategoryDialog">
                     <i class="fa fa-plus"></i>
                 </el-button>
-                <el-button class="edit" @click="editCategory">
+                <el-button class="edit" @click="toggleEditCategoryDialog">
                     <i class="fa fa-edit"></i>
                 </el-button>
                 <el-button
@@ -31,8 +31,7 @@
                 stripe
                 class="main c-form"
                 ref="table"
-                :data="this.localData.data"
-                :default-sort="{prop: 'id'}"
+                :data="localData.data"
                 @selection-change="handleSelectionChange"
         >
             <el-table-column
@@ -59,7 +58,7 @@
             ></el-table-column>
             <el-table-column label="操作" class-name="actions">
                 <template scope="scope">
-                    <el-button class="btn-pub" @click="editCategory(scope.row.id)">
+                    <el-button class="btn-pub" @click="toggleEditCategoryDialog(scope.row.id,scope.$index)">
                         <i class="fa fa-edit"></i>
                     </el-button>
                     <el-button
@@ -83,6 +82,7 @@
                 class="c-dialog"
                 :visible.sync="categoryDialogVisible"
                 :title="isEdit ? '修改分类' : '添加分类'"
+                :before-close="handleClose"
         >
             <el-form class="c-form" ref="form" :model="form" :rules="rules">
                 <el-form-item prop="category">
@@ -111,7 +111,9 @@
                 categoryDialogVisible: false,    // 分类对话框可视度
                 isLoading: false,
                 form: {
-                    category: ''
+                    category: '',
+                    id: 0,
+                    is_submit: false
                 },
                 rules: {
                     category: [
@@ -139,59 +141,15 @@
             this.getLocalData()
         },
         methods: {
-            // 验证分类是否存在
-            validateCategory(r, v, cb) {
-                axios.post('category', this.form).then(response => {
-                    response.data.data ? cb(new Error('分类已经存在。')) : cb()
-                })
-            },
-            // 提交表单
-            submitForm(){
-                this.$refs['form'].validate(valid => {
-                    if (valid) {
-                        this.isLoading = true
-                        axios.post('category', this.form).then(response => {
-                            this.isLoading = false
-                            if (response.data.error) {
-                                if (response.data.error.http_code === 401) {
-                                    // 用户邮箱未验证
-                                    this.$message({
-                                        message: response.data.error.message,
-                                        type: 'error',
-                                        customClass: 'c-msg'
-                                    })
-                                } else if (response.data.error.http_code === 422) {
-                                    // 用户名或密码错误
-                                    this.$message({
-                                        message: response.data.error.message,
-                                        type: 'error',
-                                        customClass: 'c-msg'
-                                    })
-                                }
-                            } else {
-                                if (response.data.login) {
-                                    location.href = 'http://www.dragonflyxd.com/admin'
-                                }
-                            }
-                        }).catch(error => {
-                            this.isLoading = false
-                            this.$message({
-                                message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
-                                type: 'error',
-                                customClass: 'c-msg',
-                                duration: 0,
-                                showClose: true
-                            })
-                            Promise.reject(error)
-                        })
-                    } else {
-                        return false
-                    }
-                })
-            },
             // 获取表格数据
             getLocalData(paginate = '') {
                 this.localData = paginate ? paginate : JSON.parse(this.paginate)
+            },
+            // 验证分类是否存在
+            validateCategory(r, v, cb) {
+                axios.post('category', {'name': this.form.category}).then(response => {
+                    response.data.name ? cb(new Error('分类已经存在。')) : cb()
+                })
             },
             // 跳转到指定页码的页面
             handleCurrentChange(val) {
@@ -216,35 +174,118 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val
             },
-            // 创建分类
-            createCategory() {
-                this.categoryDialogVisible = true
+            // 对话框关闭前的回调函数
+            handleClose(done) {
+                this.isEdit = false
+                this.form = {}
+                done()
             },
             toggleCategoryDialog() {
                 this.categoryDialogVisible = !this.categoryDialogVisible
             },
-            // 编辑分类
-            editCategory(id) {
-                if (typeof id === 'number') {
-                    location.href = `http://www.dragonflyxd.com/admin/category/${id}/edit`
-                } else {
-                    if (this.multipleSelection.length) {
-                        const categoryId = this.multipleSelection[this.multipleSelection.length - 1].id
-                        location.href = `http://www.dragonflyxd.com/admin/category/${categoryId}/edit`
+            toggleEditCategoryDialog(id, index) {
+                const msLen = this.multipleSelection.length
+                if (typeof id === 'number' || msLen) {
+                    if (typeof id === 'number') {
+                        this.form.category = this.localData.data[index]['name']
+                        this.form.id = this.localData.data[index]['id']
                     } else {
-                        this.$message({
-                            message: '请选择要编辑的诗文。',
-                            type: 'warning',
-                            customClass: 'custom-msg'
-                        })
+                        this.form.category = this.multipleSelection[msLen -1]['name']
+                        this.form.id = this.multipleSelection[msLen -1]['id']
                     }
+                    this.isEdit = this.categoryDialogVisible = true
+                } else {
+                    this.$message({
+                        message: '请选择要编辑的诗文。',
+                        type: 'warning',
+                        customClass: 'custom-msg'
+                    })
                 }
+            },
+            // 提交表单
+            submitForm(){
+                this.$refs['form'].validate(valid => {
+                    if (valid) {
+                        this.isLoading = true
+                        const data = {
+                            'name': this.form.category,
+                            'is_submit': true
+                        }
+                        if (this.isEdit) {
+                            axios.put(`category/${this.form.id}`, data).then(response => {
+                                this.isLoading = false
+                                this.toggleCategoryDialog()
+                                if (response.data.updated) {
+                                    this.localData.data.forEach((item, index) => {
+                                        if (item.id === this.form.id) {
+                                            this.localData.data[index].name = this.form.category
+                                        }
+                                    })
+                                    this.$message({
+                                        message: '分类更新成功。',
+                                        type: 'success',
+                                        customClass: 'c-msg',
+                                    })
+                                } else {
+                                    this.$message({
+                                        message: '分类更新失败。',
+                                        type: 'error',
+                                        customClass: 'c-msg',
+                                    })
+                                }
+                                this.isEdit = false
+                                this.form = {}
+                            }).catch(error => {
+                                this.isLoading = false
+                                this.toggleCategoryDialog()
+                                this.$message({
+                                    message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
+                                    type: 'error',
+                                    customClass: 'c-msg',
+                                    duration: 0,
+                                    showClose: true
+                                })
+                                Promise.reject(error)
+                            })
+                        } else {
+                            axios.post('category', data).then(response => {
+                                this.isLoading = false
+                                if (response.data.created) {
+                                    this.localData.data.splice(-1, 0, response.data.category)
+                                    this.$message({
+                                        message: '分类添加成功。',
+                                        type: 'success',
+                                        customClass: 'c-msg',
+                                    })
+                                } else {
+                                    this.$message({
+                                        message: '分类添加失败。',
+                                        type: 'error',
+                                        customClass: 'c-msg',
+                                    })
+                                }
+                            }).catch(error => {
+                                this.isLoading = false
+                                this.$message({
+                                    message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
+                                    type: 'error',
+                                    customClass: 'c-msg',
+                                    duration: 0,
+                                    showClose: true
+                                })
+                                Promise.reject(error)
+                            })
+                        }
+                    } else {
+                        return false
+                    }
+                })
             },
             // 删除多选的分类
             deleteMultipleCategory(){
                 // 若有选择
                 if (this.multipleSelection.length) {
-                    this.$confirm('此操作将永久删除选中的诗文,是否继续?', '提示', {
+                    this.$confirm('此操作将软删除选中的分类,是否继续?', '提示', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
                         confirmButtonClass: 'btn-pub',
@@ -255,7 +296,7 @@
                         const ids = this.multipleSelection.map(item => {
                             return item.id
                         })
-                        axios.delete('category/destroy', ids).then(response => {
+                        axios.post('category/destroy', ids).then(response => {
                             this.isMultipleDeleting = false
                             // 若删除成功
                             if (response.data.deleted) {
@@ -269,13 +310,13 @@
                                 this.$message({
                                     message: '删除成功。',
                                     type: 'success',
-                                    customClass: 'custom-msg'
+                                    customClass: 'c-msg'
                                 })
                             } else {
                                 this.$message({
                                     message: '删除失败。',
                                     type: 'error',
-                                    customClass: 'custom-msg'
+                                    customClass: 'c-msg'
                                 })
                             }
                         }).catch(error => {
@@ -300,18 +341,18 @@
             },
             // 删除分类
             deleteCategory(id, index) {
-                this.$confirm('此操作将永久删除该诗文,是否继续?', '提示', {
+                this.$confirm('此操作将软删除该分类,是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
-                    confirmButtonClass: 'custom-confirm',
-                    cancelButtonClass: 'custom-cancel',
+                    confirmButtonClass: 'btn-pub',
+                    cancelButtonClass: 'btn-can',
                     type: 'warning'
                 }).then(()=> {
                     axios.delete(`category/${id}`).then(response => {
                         // 若删除成功
                         if (response.data.deleted) {
                             // 删除表格数据里选中项
-                            this.localData.data.splice(-index - 1, 1)
+                            this.localData.data.splice(index, 1)
                             this.$message({
                                 message: '删除成功。',
                                 type: 'success',
@@ -321,7 +362,7 @@
                             this.$message({
                                 message: '删除失败。',
                                 type: 'error',
-                                customClass: 'custom-msg'
+                                customClass: 'c-msg'
                             })
                         }
                     }).catch(error => {

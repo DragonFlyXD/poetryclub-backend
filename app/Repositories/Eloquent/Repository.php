@@ -19,17 +19,8 @@ use Illuminate\Support\Facades\Validator;
  */
 abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
 {
-    /**
-     * @var
-     */
     private $app;
-    /**
-     * @var
-     */
     protected $model;
-    /**
-     * @var int
-     */
     protected $statusCode = 200;
 
     /**
@@ -149,12 +140,12 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
     /**
      * 根据主键删除数据
      *
-     * @param $id
+     * @param $ids
      * @return mixed
      */
-    public function delete($id)
+    public function delete($ids)
     {
-        return $this->model->destroy($id);
+        return $this->model->destroy($ids);
     }
 
     /**
@@ -504,7 +495,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             }
 
             // 获取分类名
-            $model['category'] = \App\Http\Frontend\Models\Category::find($model['category_id'])->name;
+            $model['category'] = \App\Http\Frontend\Models\Category::withTrashed()->find($model['category_id'])->name;
 
             // 格式化该诗文下的品鉴
             if ($type === 'poem' && $model->has('appreciations')) {
@@ -523,7 +514,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             }
 
             // 格式化品鉴的源诗文
-            if ($type === 'appreciation' && $model->has('poem')) {
+            if ($type === 'appreciation' && $model->has('poem') && $model['poem']) {
                 $model['poem'] = $this->transformModel(collect($model['poem']), 'poem', true);
             }
         }
