@@ -62,10 +62,13 @@
                     label="ID"
                     sortable
             ></el-table-column>
-            <el-table-column
-                    prop="title"
-                    label="标题"
-            ></el-table-column>
+            <el-table-column label="标题">
+                <template scope="scope">
+                    <a class="btn-default" :href="'/admin'+ scope.row.poemUrl">
+                        {{ scope.row.title }}
+                    </a>
+                </template>
+            </el-table-column>
             <el-table-column
                     prop="dynasty"
                     label="朝代"

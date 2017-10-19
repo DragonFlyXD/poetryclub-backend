@@ -31,6 +31,7 @@ class CategoryRepository extends Repository
             if (!$query) {
                 // 若无查询参数
                 $categories = $this->model
+                    ->withTrashed()
                     ->orderBy('created_at', 'desc')->paginate(10)->toArray();
             } else {
                 // 若有查询参数
@@ -110,5 +111,17 @@ class CategoryRepository extends Repository
     public function destroy($ids)
     {
         return $this->respondWith(['deleted' => !!$this->delete($ids)]);
+    }
+
+    /**
+     * 回复被软删除的分类
+     *
+     * @param $poem
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function restore($poem)
+    {
+        $result = $this->model->withTrashed()->find($poem)->restore();
+        return $this->respondWith(['restored' => $result]);
     }
 }

@@ -252,7 +252,6 @@
                                                 type: 'success',
                                                 customClass: 'c-msg'
                                             })
-                                            location.href = `http://www.dragonflyxd.com/admin/appreciation/${id}`
                                         } else {
                                             this.$message({
                                                 message: '品鉴更新失败。',

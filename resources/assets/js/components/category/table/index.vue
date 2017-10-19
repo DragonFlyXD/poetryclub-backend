@@ -58,14 +58,21 @@
             ></el-table-column>
             <el-table-column label="操作" class-name="actions">
                 <template scope="scope">
-                    <el-button class="btn-pub" @click="toggleEditCategoryDialog(scope.row.id,scope.$index)">
-                        <i class="fa fa-edit"></i>
-                    </el-button>
-                    <el-button
-                            class="btn-can"
-                            @click="deleteCategory(scope.row.id,scope.$index)"
-                    ><i class="fa fa-trash"></i>
-                    </el-button>
+                    <template v-if="scope.row.deleted_at">
+                        <el-button class="btn-pub" @click="restore(scope.row.id,scope.$index)">
+                            <i class="fa fa-reply"></i>
+                        </el-button>
+                    </template>
+                    <template v-else>
+                        <el-button class="btn-pub" @click="toggleEditCategoryDialog(scope.row.id,scope.$index)">
+                            <i class="fa fa-edit"></i>
+                        </el-button>
+                        <el-button
+                                class="btn-can"
+                                @click="deleteCategory(scope.row.id,scope.$index)"
+                        ><i class="fa fa-trash"></i>
+                        </el-button>
+                    </template>
                 </template>
             </el-table-column>
         </el-table>
@@ -73,7 +80,7 @@
             <el-pagination
                     small
                     layout="prev,pager,next"
-                    :current-page.sync="this.localData.current_page"
+                    :current-page="this.localData.current_page"
                     :total="this.localData.total"
                     @current-change="handleCurrentChange"
             ></el-pagination>
@@ -163,7 +170,7 @@
                     this.$message({
                         message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
                         type: 'error',
-                        customClass: 'custom-msg',
+                        customClass: 'c-msg',
                         duration: 0,
                         showClose: true
                     })
@@ -180,6 +187,25 @@
                 this.form = {}
                 done()
             },
+            // 恢复被删除的分类
+            restore(id, index) {
+                axios.get(`category/${id}/restore`).then(response => {
+                    if (response.data.restored) {
+                        this.$message({
+                            message: '被软删除的分类取回成功。',
+                            type: 'success',
+                            customClass: 'c-msg'
+                        })
+                        this.localData.data[index].deleted_at = null
+                    } else {
+                        this.$message({
+                            message: '被软删除的分类取回失败。',
+                            type: 'error',
+                            customClass: 'c-msg'
+                        })
+                    }
+                })
+            },
             toggleCategoryDialog() {
                 this.categoryDialogVisible = !this.categoryDialogVisible
             },
@@ -190,15 +216,15 @@
                         this.form.category = this.localData.data[index]['name']
                         this.form.id = this.localData.data[index]['id']
                     } else {
-                        this.form.category = this.multipleSelection[msLen -1]['name']
-                        this.form.id = this.multipleSelection[msLen -1]['id']
+                        this.form.category = this.multipleSelection[msLen - 1]['name']
+                        this.form.id = this.multipleSelection[msLen - 1]['id']
                     }
                     this.isEdit = this.categoryDialogVisible = true
                 } else {
                     this.$message({
                         message: '请选择要编辑的诗文。',
                         type: 'warning',
-                        customClass: 'custom-msg'
+                        customClass: 'c-msg'
                     })
                 }
             },
@@ -303,7 +329,7 @@
                                 ids.forEach(id => {
                                     this.localData.data.forEach((item, index) => {
                                         if (item['id'] === id) {
-                                            this.localData.data.splice(index, 1)
+                                            this.localData.data.deleted_at = '已删除'
                                         }
                                     })
                                 })
@@ -324,7 +350,7 @@
                             this.$message({
                                 message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
                                 type: 'error',
-                                customClass: 'custom-msg',
+                                customClass: 'c-msg',
                                 duration: 0,
                                 showClose: true
                             })
@@ -335,7 +361,7 @@
                     this.$message({
                         message: '请选择要删除的诗文。',
                         type: 'warning',
-                        customClass: 'custom-msg'
+                        customClass: 'c-msg'
                     })
                 }
             },
@@ -352,11 +378,11 @@
                         // 若删除成功
                         if (response.data.deleted) {
                             // 删除表格数据里选中项
-                            this.localData.data.splice(index, 1)
+                            this.localData.data[index].deleted_at = '已删除'
                             this.$message({
                                 message: '删除成功。',
                                 type: 'success',
-                                customClass: 'custom-msg'
+                                customClass: 'c-msg'
                             })
                         } else {
                             this.$message({
@@ -369,7 +395,7 @@
                         this.$message({
                             message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
                             type: 'error',
-                            customClass: 'custom-msg',
+                            customClass: 'c-msg',
                             duration: 0,
                             showClose: true
                         })

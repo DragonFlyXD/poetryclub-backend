@@ -3,6 +3,7 @@
 namespace App\Http\Frontend\Controllers;
 
 use App\Http\Controller;
+use App\Http\Requests\StoreProfile;
 use App\Http\Requests\UserRegister as Register;
 use App\Repositories\Eloquent\UserRepository as User;
 use Illuminate\Http\JsonResponse;
@@ -40,18 +41,7 @@ class UserController extends Controller
      */
     public function register(Register $request)
     {
-        $user = $this->user->register($request->all());
-        // 若用户名含有非法字符
-        if ($user instanceof JsonResponse) {
-            return $user;
-        }
-        // 若创建失败
-        if (is_null($user)) {
-            return $this->user->respondWith(['registered' => false]);
-        }
-        // 发送注册验证邮件
-        $this->user->registerShip($user);
-        return $this->user->respondWith(['registered' => true]);
+        return $this->user->register($request);
     }
 
     /**
@@ -101,16 +91,18 @@ class UserController extends Controller
     /**
      * 修改个人信息
      *
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse|mixed
+     * @param StoreProfile $request
+     * @return JsonResponse|mixed
      */
-    public function update(Request $request)
+    public function update(StoreProfile $request)
     {
-        return $this->user->updateUserProfile($request->toArray());
+        return $this->user->updateUserProfile($request);
     }
 
     /**
-     * 用户退出登录
+     * 退出登录
+     *
+     * @return JsonResponse|mixed
      */
     public function logout()
     {

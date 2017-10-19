@@ -11,7 +11,7 @@
 @section('content')
     <section class="df-user-wrapper">
         <div class="avatar-wrapper">
-            <img class="avatar" src="{{ $user->avatar }}" />
+            <img class="avatar" src="{{ $user->avatar }}"/>
         </div>
         <div class="df-user">
             <div class="item">
@@ -23,12 +23,16 @@
                 <p>{{ $user->name }}</p>
             </div>
             <div class="item">
+                <label>昵称</label>
+                <p>{{ $user->profile->nickname }}</p>
+            </div>
+            <div class="item">
                 <label>Email</label>
                 <p>
                     @if ($user->email)
                         {{ $user->email }}
                     @else
-                        {!! $default !!}
+                        <span class="default">未设置</span>
                     @endif
                 </p>
             </div>
@@ -38,7 +42,7 @@
                     @if ($user->mobile)
                         {{ $user->mobile }}
                     @else
-                        {!! $default !!}
+                        <span class="default">未设置</span>
                     @endif
                 </p>
             </div>
@@ -47,5 +51,5 @@
                 <p>{{ $user->created_at }}</p>
             </div>
         </div>
-     </section>
+    </section>
 @endsection

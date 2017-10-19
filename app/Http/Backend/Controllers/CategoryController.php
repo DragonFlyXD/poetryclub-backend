@@ -40,7 +40,7 @@ class CategoryController extends Controller
      */
     public function search(Request $request)
     {
-        return $this->category->index($request->query('query'));
+        return $this->category->index($request->query('query'), true);
     }
 
     /**
@@ -98,6 +98,17 @@ class CategoryController extends Controller
     public function multipleDestroy(Request $request)
     {
         return $this->category->destroy($request->all());
+    }
+
+    /**
+     * 恢复被软删除的分类
+     *
+     * @param $poem
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function restore($poem)
+    {
+        return $this->category->restore($poem);
     }
 
 }

@@ -18,20 +18,23 @@ import 'font-awesome/css/font-awesome.css'
 Vue.use(ElementUI)
 
 // 登录相关
-import LoginForm from './components/login/form'  // 登录表单
+import LoginForm from './components/login/form'
 
 // 诗文相关
-import PoemTable from './components/poem/table'  // 表格
-import PoemForm from './components/poem/form'    // 表单
+import PoemTable from './components/poem/table'
+import PoemForm from './components/poem/form'
 
 // 品鉴相关
-import AppreciationTable from './components/appreciation/table'  // 表格
-import AppreciationForm from './components/appreciation/form'  // 表单
+import AppreciationTable from './components/appreciation/table'
+import AppreciationForm from './components/appreciation/form'
 
 // 分类相关
 import CategoryTable from './components/category/table'
 
-import UserTable from './components/userTable'
+// 用户相关
+import UserTable from './components/user/table'
+import CreateUser from './components/user/create'
+import EditUser from './components/user/edit'
 
 // 杂项
 import Dot from './components/misc/dot'  // 粒子动画
@@ -47,6 +50,8 @@ new Vue({
         AppreciationForm,
         CategoryTable,
         UserTable,
+        CreateUser,
+        EditUser,
         Dot,
         CountTo
     }

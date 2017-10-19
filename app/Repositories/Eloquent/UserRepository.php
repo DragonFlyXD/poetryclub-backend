@@ -44,59 +44,116 @@ class UserRepository extends Repository
         return 'App\Http\Frontend\Models\User';
     }
 
+    /**
+     * 获取用户分页数据
+     *
+     * @param string $query
+     * @return mixed
+     */
     public function index($query = '')
     {
         // 获取分页数据
         if (!$query) {
             $paginate = $this->paginate()->toArray();
+
+            $paginate['data'] = collection($paginate['data'])
+                ->map(function ($item) {
+                    $user = $this->transformUser($this->with('profile')->find($item['id']));
+                    $user['publish_time'] = $this->transformTime($user['created_at']);
+                    return $user;
+                });
         } else {
+            // 获取待查询用户ID集合
+            $users = (new \App\Http\Frontend\Models\Profile())
+                ->where('nickname', 'like', "%$query%")
+                ->get();
+
             // 若有查询参数
             $paginate = $this->model
-                ->where('name', 'like', "%$query%")
+                ->whereIn('id', $users->pluck('user_id'))
                 ->paginate(10)
                 ->toArray();
+
+            $paginate['data'] = collection($paginate['data'])
+                ->map(function ($item, $index) use ($users) {
+                    $user = $this->transformUser(collection($item)->merge(['profile' => $users[$index]]));
+                    $user['publish_time'] = $this->transformTime($user['created_at']);
+                    return $user;
+                });
         }
+
         return $paginate;
+    }
+
+    /**
+     * 获取需要更新的用户的数据
+     *
+     * @param $user
+     * @return \Illuminate\Http\JsonResponse|mixed
+     */
+    public function edit($user)
+    {
+        $user = $this->model->with('profile')->where('name', $user)->first();
+        if (!$user) {
+            return $this->errorNotFound();
+        } else {
+            $user = $this->transformUser($user);
+            $user['publish_time'] = $this->transformTime($user['created_at']);
+            return $user;
+        }
     }
 
     /**
      * 用户注册
      *
-     * @param array $data
+     * @param $request
+     * @param bool $isBackend
      * @return mixed|null
      */
-    public function register(array $data)
+    public function register($request, $isBackend = false)
     {
-        // 过滤系统预定义字符
-        if (preg_match('/^(login|register|profile|history|favorites|inbox|reset|email)$/', $data['name'])) {
-            return $this->errorWrongArgs('用户名已被系统预定义。');
+        $user = $this->create([
+            'name' => $request->name,
+            'email' => $request->get('email', null),
+            'mobile' => $request->get('mobile', null),
+            'password' => bcrypt($request->password),
+            'avatar' => 'http://images.dragonflyxd.com/default.png',
+            'confirmation_token' => str_random(40)
+        ]);
+        // 若注册成功,则发送注册邮件
+        // 若为后台添加用户,则不需要发送邮件
+        if ($user && !$isBackend) {
+            Mail::to($user)
+                ->send(new RegisterShipped($user));
+        } else if ($isBackend) {
+            // 若为后台添加用户, 激活新注册的用户并初始化个人信息
+            $user->is_active = 1;
+            $user->save();
+            (new \App\Http\Frontend\Models\Profile())->create([
+                'user_id' => $user->id,
+                'nickname' => $user->name
+            ]);
         }
-        // 如果指定该次请求为正式提交表单,则注册该用户
-        return array_has($data, 'is_submit')
-            ? $this->create([
-                'name' => $data['name'],
-                'email' => array_get($data, 'email', null),
-                'mobile' => array_get($data, 'mobile', null),
-                'password' => bcrypt($data['password']),
-                'avatar' => 'http://images.dragonflyxd.com/default.png',
-                'confirmation_token' => str_random(40)
-            ]) : null;
+
+        return $this->respondWith(['registered' => !!$user]);
     }
 
     /**
-     * 将验证邮件加入队列后发送
+     * 改变指定用户的激活状态
      *
-     * @param \App\Http\Frontend\Models\User $user
+     * @param $user
+     * @param $request
+     * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function registerShip(\App\Http\Frontend\Models\User $user)
+    public function toggleUserActiveState($user, $request)
     {
-        /*$message = (new RegisterShipped($user))
-            ->onQueue('emails');*/
-        /*Mail::to($user)
-            ->queue(new RegisterShipped($user));*/
-        Mail::to($user)
-            ->send(new RegisterShipped($user));
-
+        $user = $this->findBy('name', $user);
+        if ($user) {
+            $user->is_active = $request->is_active === 0 ? 1 : 0;
+            $result = $user->save();
+            return $this->respondWith(['active' => $result, 'status' => $user->is_active]);
+        }
+        return $this->respondWith(['active' => false]);
     }
 
     /**
@@ -340,15 +397,22 @@ class UserRepository extends Repository
     /**
      * 更新用户个人信息
      *
-     * @param $profile
+     * @param $request
+     * @param null $user
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function updateUserProfile($profile)
+    public function updateUserProfile($user = null, $request)
     {
-        $userId = id() ?: id('web');
+        if ($user) {
+            $userId = $this->findBy('name', $user)->id;
+        } else {
+            $userId = id() || id('web');
+        }
+
         $result = (new \App\Http\Frontend\Models\Profile())
             ->firstOrCreate(['user_id' => $userId])
-            ->update($profile);
+            ->update($request->all());
+
         return $this->respondWith(['updated' => !!$result]);
     }
 
@@ -412,9 +476,9 @@ class UserRepository extends Repository
             return $poem;
         });
         $work['poem'] = $this->transformModels($poems)
-        ->sortByDesc('pageviews_count')
-        ->values()
-        ->all();
+            ->sortByDesc('pageviews_count')
+            ->values()
+            ->all();
 
         // 格式化品鉴数据
         $appreciations = collect($user->appreciations)->map(function ($item) use ($user) {

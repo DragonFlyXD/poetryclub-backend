@@ -23,9 +23,14 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Backend\Controllers', 'middle
         Route::get('/', 'HomeController@index');
 
         // 用户相关
-        Route::get('user/profile', 'UserController@profile');
+        Route::get('user', 'UserController@index');
+        Route::get('user/create', 'UserController@create');
+        Route::post('user/register', 'UserController@register');
         Route::get('user/search', 'UserController@search');
-        Route::resource('user', 'UserController');
+        Route::put('user/{user}', 'UserController@update');
+        Route::get('user/{user}', 'UserController@profile');
+        Route::get('user/{user}/edit', 'UserController@edit');
+        Route::post('user/{user}/active', 'UserController@active');
 
         // 诗文相关
         Route::post('poem/destroy', 'PoemController@multipleDestroy');    // 多选删除
@@ -39,6 +44,7 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Backend\Controllers', 'middle
 
         // 分类相关
         Route::post('category/destroy', 'CategoryController@multipleDestroy');    // 多选删除
+        Route::get('category/{category}/restore', 'CategoryController@restore')->where('category', '\d+');  // 恢复被软删除的分类
         Route::get('category/search', 'CategoryController@search');
         Route::resource('category', 'CategoryController');
 

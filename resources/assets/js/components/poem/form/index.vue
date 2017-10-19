@@ -209,7 +209,6 @@
                                                 type: 'success',
                                                 customClass: 'c-msg'
                                             })
-                                            location.href = `http://www.dragonflyxd.com/admin/poem/${id}`
                                         } else {
                                             this.$message({
                                                 message: '诗文更新失败。',
