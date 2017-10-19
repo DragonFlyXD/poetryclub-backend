@@ -54,7 +54,10 @@ class UserRepository extends Repository
     {
         // 获取分页数据
         if (!$query) {
-            $paginate = $this->paginate()->toArray();
+            $paginate = $this->model
+                ->orderBy('created_at', 'desc')
+                ->paginate(10)
+                ->toArray();
 
             $paginate['data'] = collection($paginate['data'])
                 ->map(function ($item) {
@@ -71,6 +74,7 @@ class UserRepository extends Repository
             // 若有查询参数
             $paginate = $this->model
                 ->whereIn('id', $users->pluck('user_id'))
+                ->orderBy('created_at', 'desc')
                 ->paginate(10)
                 ->toArray();
 

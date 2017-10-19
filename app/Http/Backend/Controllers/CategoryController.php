@@ -40,7 +40,7 @@ class CategoryController extends Controller
      */
     public function search(Request $request)
     {
-        return $this->category->index($request->query('query'), true);
+        return $this->category->index($request->query('query'));
     }
 
     /**

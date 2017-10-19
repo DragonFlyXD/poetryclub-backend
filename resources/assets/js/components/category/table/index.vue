@@ -54,7 +54,7 @@
             </el-table-column>
             <el-table-column
                     label="日期"
-                    prop="created_at"
+                    prop="publish_time"
             ></el-table-column>
             <el-table-column label="操作" class-name="actions">
                 <template scope="scope">

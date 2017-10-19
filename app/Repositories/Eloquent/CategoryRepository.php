@@ -40,6 +40,12 @@ class CategoryRepository extends Repository
                     ->paginate(10)
                     ->toArray();
             }
+
+            $categories['data'] = collection($categories['data'])->map(function ($category) {
+                $category['publish_time'] = $this->transformTime($category['created_at']);
+                return $category;
+            })->all();
+
         } else {
             if (!$query) {
                 // 若无查询参数
