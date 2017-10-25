@@ -519,7 +519,6 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             }
         }
 
-
         // 设置作品地址链接
         if ($type === 'poem') {
             $model->prepend('/poem/' . $model['id'], 'poemUrl');

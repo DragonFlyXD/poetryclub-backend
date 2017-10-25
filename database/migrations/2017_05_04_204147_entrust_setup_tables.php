@@ -1,4 +1,6 @@
 <?php
+use App\Http\Frontend\Models\Permission;
+use App\Http\Frontend\Models\Role;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -58,6 +60,8 @@ class EntrustSetupTables extends Migration
         });
 
         DB::commit();
+
+        $this->setupFounderAndBaseRolesPermission();
     }
 
     /**
@@ -71,5 +75,21 @@ class EntrustSetupTables extends Migration
         Schema::drop('permissions');
         Schema::drop('role_user');
         Schema::drop('roles');
+    }
+
+    public function setupFounderAndBaseRolesPermission()
+    {
+        // 新建 role
+        $founder = new Role();
+        $founder->name = 'founder';
+        $founder->display_name = '网站创始人';
+        $founder->description = '网站创始人';
+        $founder->save();
+
+        $admin = new Role();
+        $admin->name = 'admin';
+        $admin->display_name = '管理员';
+        $admin->display_name = '管理员';
+        $admin->save();
     }
 }

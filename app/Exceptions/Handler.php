@@ -48,7 +48,7 @@ class Handler extends ExceptionHandler
             $code = $exception->getCode();
             if (view()->exists('errors' . $code)) {
                 $message = $exception->getMessage();
-                return response()->view('errors' . $code, ['message' => $message], $code);
+                return response()->view('errors' . $code, ['message' => $message, 'code' => $code], $code);
             }
         }
         return parent::render($request, $exception);

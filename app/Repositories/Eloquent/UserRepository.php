@@ -172,7 +172,7 @@ class UserRepository extends Repository
         $user = $this->findBy('confirmation_token', $token);
         if (is_null($user)) {
             // 如果 token 失效或不存在,则直接返回
-            return $this->respondWith(['verified' => false]);
+            return $this->respondWith(['registered' => false]);
         }
         // 激活该账户
         $user->is_active = 1;
@@ -183,7 +183,7 @@ class UserRepository extends Repository
             'user_id' => $user->id,
             'nickname' => $user->name
         ]);
-        return $this->respondWith(['verified' => true]);
+        return $this->respondWith(['registered' => true]);
     }
 
     /**

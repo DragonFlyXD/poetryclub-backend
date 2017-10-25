@@ -5,8 +5,39 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>诗词小筑-后台管理系统 : )</title>
+    <title>HTTP ERROR - 诗词小筑 :)</title>
     <link rel="stylesheet" href="{{ mix('backend/css/app.css')  }}">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'monaco', 'menlo', serif, sans-serif;
+            font-size: 16px;
+            background-color: #fff;
+        }
+
+        .error {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+
+        .main {
+            padding: 50px;
+            border: 1px solid #EFF2F7;
+            border-radius: 3px;
+            font-size: 2em;
+            text-align: center;
+            color: #8492A6;
+        }
+
+        .main .rocket {
+            font-size: 4em;
+            color: #42b983;
+        }
+    </style>
     <script>
         window.Laravel = <?php echo json_encode([
                 'csrfToken' => csrf_token()
@@ -14,42 +45,13 @@
     </script>
 </head>
 <body>
-<div id="app">
-    <header class="df-header">
-        <div class="logo">
-            <a href="{{ url('admin') }}">诗词❤️小筑</a>
-        </div>
-    </header>
-    <div class="df-main">
-        <el-menu class="df-nav" theme="dark">
-            <a href="{{ url('admin') }}">
-                <el-menu-item index="{{ url('admin') }}">
-                    <i class="fa fa-dashboard"></i>Dashboard
-                </el-menu-item>
-            </a>
-            <a href="{{ url('admin/poem') }}">
-                <el-menu-item index="{{ url('admin/poem') }}">
-                    <i class="fa fa-book"></i>诗文管理
-                </el-menu-item>
-            </a>
-            <a href="{{ url('admin/appreciation') }}">
-                <el-menu-item index="{{ url('admin/appreciation') }}">
-                    <i class="fa fa-pencil-square-o"></i>品鉴管理
-                </el-menu-item>
-            </a>
-            <a href="{{ url('admin/category') }}">
-                <el-menu-item index="{{ url('admin/category') }}">
-                    <i class="fa fa-cubes"></i>分类管理
-                </el-menu-item>
-            </a>
-            <a href="{{ url('admin/user') }}">
-                <el-menu-item index="{{ url('admin/user') }}">
-                    <i class="fa fa-users"></i>用户管理
-                </el-menu-item>
-            </a>
-        </el-menu>
-        <div class="df-content">
-            @yield('content')
+    <div id="app">
+        <div class="error">
+            <div class="main">
+                <div class="title">@yield('title')</div>
+                <p class="body">@yield('body')</p>
+                <i class="fa fa-rocket rocket"></i>
+            </div>
         </div>
     </div>
 </div>
