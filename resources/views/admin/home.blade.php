@@ -26,7 +26,9 @@
                         <a class="title tdu" href="{{ url('/admin/poem/'.$poem['id']) }}">{{ $poem['title'] }}</a>
                         <div class="info">
                             <a class="name tdu"
-                               href="{{ url('/admin/user/'.$poem->user['name']) }}">{{ $poem->profile->nickname }}</a>
+                               href="{{ url('/admin/user/'.$poem['user']['name']) }}">
+                                {{ $poem['profile']['nickname'] ?: $poem['user']['name'] }}
+                            </a>
                             <div class="publish-time">{{ \Carbon\Carbon::parse($poem['created_at'])->diffForHumans() }}</div>
                         </div>
                     </div>
@@ -41,7 +43,9 @@
                         <a class="title tdu" href="{{ url('/admin/appreciation/'.$appreciation['id']) }}">{{ $appreciation['title'] }}</a>
                         <div class="info">
                             <a class="name tdu"
-                               href="{{ url('/admin/user/'.$appreciation->user['name']) }}">{{ $appreciation->profile->nickname }}</a>
+                               href="{{ url('/admin/user/'.$appreciation['user']['name']) }}">
+                                {{ $appreciation['profile']['nickname'] ?: $appreciation['user']['name'] }}
+                            </a>
                             <div class="publish-time">{{ \Carbon\Carbon::parse($appreciation['created_at'])->diffForHumans() }}</div>
                         </div>
                     </div>
@@ -57,7 +61,9 @@
                             <img class="avatar" src="{{ $user['avatar'] }}" alt="avatar">
                         </a>
                         <div class="info">
-                            <a class="name tdu" href="{{ url('/admin/user/'.$user['name']) }}">{{ $user['profile']['nickname'] }}</a>
+                            <a class="name tdu" href="{{ url('/admin/user/'.$user['name']) }}">
+                                {{ $user['profile']['nickname'] ?: $user['name'] }}
+                            </a>
                             <div class="publish-time">{{ \Carbon\Carbon::parse($user['created_at'])->diffForHumans() }}</div>
                         </div>
                     </div>
