@@ -175,4 +175,16 @@
     }
 </script>
 
-<style lang="stylus" scoped> @import "index.styl"; </style>
+<style lang="stylus" scoped>
+@import '../../../../stylus/common'
+
+.df-createUser
+  fj(center)
+  margin-top 50px
+  .main
+    width 50%
+    .publish
+      width 100%
+    .button-group
+      padding-top 10px
+</style>

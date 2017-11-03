@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Backend\Controllers;
 
 use App\Http\Controller;
@@ -113,5 +112,4 @@ class UserController extends Controller
     {
         return $this->user->toggleUserActiveState($user, $request);
     }
-
 }

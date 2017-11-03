@@ -61,7 +61,7 @@ class EntrustSetupTables extends Migration
 
         DB::commit();
 
-        $this->setupFounderAndBaseRolesPermission();
+        $this->init();
     }
 
     /**
@@ -77,19 +77,86 @@ class EntrustSetupTables extends Migration
         Schema::drop('roles');
     }
 
-    public function setupFounderAndBaseRolesPermission()
+    public function init()
     {
-        // 新建 role
+        // create roles
         $founder = new Role();
         $founder->name = 'founder';
-        $founder->display_name = '网站创始人';
-        $founder->description = '网站创始人';
+        $founder->display_name = 'Founder';
+        $founder->description = 'Kardusen';
         $founder->save();
 
         $admin = new Role();
         $admin->name = 'admin';
-        $admin->display_name = '管理员';
-        $admin->display_name = '管理员';
+        $admin->display_name = 'Admin';
+        $admin->description = 'Mariana';
         $admin->save();
+
+        $user = new Role();
+        $user->name = 'user';
+        $user->display_name = 'User';
+        $user->description = 'Thunder in everyone of us';
+        $user->save();
+
+        // create permissions
+        $createContent = new Permission();
+        $createContent->name = 'create-content';
+        $createContent->display_name = 'Create content';
+        $createContent->description = 'Create new contents';
+        $createContent->save();
+
+        $editContent = new Permission();
+        $editContent->name = 'edit-content';
+        $editContent->display_name = 'Edit content';
+        $editContent->description = 'Edit existing contents';
+        $editContent->save();
+
+        $createPoem = new Permission();
+        $createPoem->name = 'create-poem';
+        $createPoem->display_name = 'Create poem';
+        $createPoem->description = 'Create new poems';
+        $createPoem->save();
+
+        $editPoem = new Permission();
+        $editPoem->name = 'edit-poem';
+        $editPoem->display_name = 'Edit poem';
+        $editPoem->description = 'Edit existing poems';
+        $editPoem->save();
+
+        $createAppreciation = new Permission();
+        $createAppreciation->name = 'create-appreciation';
+        $createAppreciation->display_name = 'Create appreciation';
+        $createAppreciation->description = 'Create new appreciations';
+        $createAppreciation->save();
+
+        $editAppreciation = new Permission();
+        $editAppreciation->name = 'edit-appreciation';
+        $editAppreciation->display_name = 'Edit appreciation';
+        $editAppreciation->description = 'Edit existing appreciations';
+        $editAppreciation->save();
+
+        $createCategory = new Permission();
+        $createCategory->name = 'create-category';
+        $createCategory->display_name = 'Create category';
+        $createCategory->description = 'Create new categories';
+        $createCategory->save();
+
+        $editCategory = new Permission();
+        $editCategory->name = 'edit-category';
+        $editCategory->display_name = 'Edit category';
+        $editCategory->description = 'Edit existing categories';
+        $editCategory->save();
+
+        $createUser = new Permission();
+        $createUser->name = 'create-user';
+        $createUser->display_name = 'Create user';
+        $createUser->description = 'Create new users';
+        $createUser->save();
+
+        $editUser = new Permission();
+        $editUser->name = 'edit-user';
+        $editUser->display_name = 'Edit user';
+        $editUser->description = 'Edit existing users';
+        $editUser->save();
     }
 }

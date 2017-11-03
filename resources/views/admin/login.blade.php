@@ -14,7 +14,7 @@
     </script>
 </head>
 <body>
-    <div id="app">
+    <div id="app" style="height: 100%">
         <div class="df-login">
             <dot></dot>
             <login-form></login-form>

@@ -48,6 +48,10 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Backend\Controllers', 'middle
         Route::get('category/search', 'CategoryController@search');
         Route::resource('category', 'CategoryController');
 
+        // 权限相关
+        Route::get('auth/role', 'RoleController@index');
+        Route::get('auth/permission', 'PermissionController@index');
+
         // 退出登录
         Route::get('logout', 'HomeController@logout');
     });

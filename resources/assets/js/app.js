@@ -20,6 +20,9 @@ Vue.use(ElementUI)
 // 登录相关
 import LoginForm from './components/login/form'
 
+// 左侧导航栏
+import AppNav from './components/nav'
+
 // 诗文相关
 import PoemTable from './components/poem/table'
 import PoemForm from './components/poem/form'
@@ -44,6 +47,7 @@ new Vue({
     el: '#app',
     components: {
         LoginForm,
+        AppNav,
         PoemTable,
         PoemForm,
         AppreciationTable,

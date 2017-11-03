@@ -22,12 +22,13 @@ body, html
   fj(space-between)
   height 50px
   padding 0 20px
+  border-bottom 3px solid Green
   line-height 50px
-  bc(Green, White)
+  bc(White, Green)
   .logo
     & > a
       text-decoration none
-      color White
+      color Green
   .user
     fj(flex-start, center)
     .name
@@ -39,13 +40,13 @@ body, html
         position absolute
         top 0
         left -15px
-        color White
+        color Light-Orange
         content '\201C'
       &::after
         position absolute
         top 0
         right -15px
-        color White
+        color Light-Orange
         content '\201D'
     .menu
       height 50px
@@ -59,17 +60,7 @@ body, html
 /* main */
 .df-main
   fj()
-  height 100%
-  .df-nav
-    min-height 100%
-    border-radius 0
-    a
-      text-decoration none
-      .is-active
-        color Green
-      i
-        margin-right 5px
-        color Green
+  min-height 100%
   .df-content
     width 100%
     padding 20px
@@ -79,6 +70,8 @@ body, html
         text-decoration none
         &:hover
           color Orange !important
+      i
+        margin-right 2px
 
 /* home */
 .df-home

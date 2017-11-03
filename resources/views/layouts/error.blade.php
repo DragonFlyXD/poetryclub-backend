@@ -45,7 +45,7 @@
     </script>
 </head>
 <body>
-    <div id="app">
+    <div id="app" style="height: 100%">
         <div class="error">
             <div class="main">
                 <div class="title">@yield('title')</div>

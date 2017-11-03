@@ -797,13 +797,14 @@ html {
           align-items: stretch;
   height: 50px;
   padding: 0 20px;
+  border-bottom: 3px solid #42b983;
   line-height: 50px;
-  color: #fff;
-  background-color: #42b983;
+  color: #42b983;
+  background-color: #fff;
 }
 .df-header .logo > a {
   text-decoration: none;
-  color: #fff;
+  color: #42b983;
 }
 .df-header .user {
   display: -webkit-box;
@@ -826,14 +827,14 @@ html {
   position: absolute;
   top: 0;
   left: -15px;
-  color: #fff;
+  color: #ffc741;
   content: '\201C';
 }
 .df-header .user .name::after {
   position: absolute;
   top: 0;
   right: -15px;
-  color: #fff;
+  color: #ffc741;
   content: '\201D';
 }
 .df-header .user .menu {
@@ -858,21 +859,7 @@ html {
   -webkit-box-align: stretch;
       -ms-flex-align: stretch;
           align-items: stretch;
-  height: 100%;
-}
-.df-main .df-nav {
   min-height: 100%;
-  border-radius: 0;
-}
-.df-main .df-nav a {
-  text-decoration: none;
-}
-.df-main .df-nav a .is-active {
-  color: #42b983;
-}
-.df-main .df-nav a i {
-  margin-right: 5px;
-  color: #42b983;
 }
 .df-main .df-content {
   width: 100%;
@@ -886,6 +873,9 @@ html {
 }
 .df-main .df-content .breadcrumb a:hover {
   color: #f7ba2a !important;
+}
+.df-main .df-content .breadcrumb i {
+  margin-right: 2px;
 }
 /* home */
 .df-home .statistics {

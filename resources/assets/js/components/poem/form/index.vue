@@ -305,4 +305,17 @@
     }
 </script>
 
-<style lang="stylus" scoped> @import "index.styl"; </style>
+<style lang="stylus" scoped>
+@import '../../../../stylus/common'
+
+.df-poemForm
+  fj(center)
+  margin-top 50px
+  .main
+    width 66.6%
+    .select, .publish
+      width 100%
+    .tags
+      .tag
+        margin-right 5px
+ </style>
