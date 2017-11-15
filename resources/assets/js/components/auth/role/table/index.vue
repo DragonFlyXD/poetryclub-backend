@@ -3,23 +3,23 @@
         <header class="header">
             <el-input
                     class="search c-form"
-                    placeholder="请输入诗文标题..."
+                    placeholder="请输入Role name..."
                     icon="search"
                     v-model="query"
                     :on-icon-click="search"
                     @keyup.enter.native="search"
             ></el-input>
             <div class="actions">
-                <el-button class="add" @click="createPoem">
+                <el-button class="add" @click="createRole">
                     <i class="fa fa-plus"></i>
                 </el-button>
-               <el-button class="edit" @click="editPoem">
+               <el-button class="edit" @click="editRole">
                     <i class="fa fa-edit"></i>
                 </el-button>
                 <el-button
                         class="destroy"
                         :loading="isMultipleDeleting"
-                        @click="deleteMultiplePoem"
+                        @click="deleteMultipleRole"
                 ><i class="fa fa-trash"></i>
                 </el-button>
                 <el-button class="refresh" @click="refresh">
@@ -37,18 +37,25 @@
             <el-table-column type="expand">
                 <template scope="scope">
                     <el-form>
-                        <el-form-item label="标题">
-                            <span>{{ scope.row.title }}</span>
+                        <el-form-item label="名称">
+                            <span>{{ scope.row.name }}</span>
                         </el-form-item>
-                        <el-form-item label="作者">
-                            <span>{{ scope.row.authorName }}</span>
+                        <el-form-item label="Permissions">
+                            <template v-if="scope.row.perms.length > 0">
+                                <el-tag
+                                        type="info"
+                                        v-for="(perm, index) in scope.row.perms"
+                                        :key="index"
+                                >{{ perm.name }}
+                                </el-tag>
+                            </template>
+                            <el-tag type="danger" v-else>NULL</el-tag>
                         </el-form-item>
-                        <el-form-item label="朝代">
-                            <span>{{ scope.row.dynasty }}</span>
+                        <el-form-item label="显示名">
+                            <span>{{ scope.row.display_name }}</span>
                         </el-form-item>
-                        <el-form-item>
-                            <h3>内容</h3>
-                            <div v-html="scope.row.body"></div>
+                        <el-form-item label="简述">
+                            <span>{{ scope.row.description }}</span>
                         </el-form-item>
                     </el-form>
                 </template>
@@ -62,61 +69,39 @@
                     label="ID"
                     sortable
             ></el-table-column>
-            <el-table-column label="标题">
-                <template scope="scope">
-                    <a class="btn-default" :href="'/admin'+ scope.row.poemUrl">
-                        {{ scope.row.title }}
-                    </a>
-                </template>
+            <el-table-column
+                    prop="name"
+                    label="名称"
+            ></el-table-column>
+            <el-table-column label="Permissions">
+              <template scope="scope">
+                  <template v-if="scope.row.perms.length > 0">
+                      <el-tag
+                              type="info"
+                              v-for="(perm, index) in scope.row.perms"
+                              :key="index"
+                      >{{ perm.name }}
+                      </el-tag>
+                  </template>
+                  <el-tag type="danger" v-else>NULL</el-tag>
+              </template>
             </el-table-column>
             <el-table-column
-                    prop="dynasty"
-                    label="朝代"
+                    prop="display_name"
+                    label="显示名"
             ></el-table-column>
-            <el-table-column label="是否发布">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.is_valid ? 'success' : 'danger' "
-                    >{{ scope.row.is_valid ? '已发布' : '未发布' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="是否原创">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.is_original ? 'success' : 'danger' "
-                    >{{ scope.row.is_original ? '原创' : '非原创' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="是否关闭评论">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.close_comment ? 'success' : 'danger' "
-                    >{{ scope.row.close_comment ? '已关闭' : '未关闭' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="是否隐藏">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.is_hidden ? 'success' : 'danger' "
-                    >{{ scope.row.is_hidden ? '已隐藏' : '未隐藏' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
             <el-table-column
                     label="日期"
                     prop="publish_time"
             ></el-table-column>
             <el-table-column label="操作" class-name="actions">
                 <template scope="scope">
-                    <el-button class="btn-pub" @click="editPoem(scope.row.id)">
+                    <el-button class="btn-pub" @click="editRole(scope.row.id)">
                         <i class="fa fa-edit"></i>
                     </el-button>
                     <el-button
                             class="btn-can"
-                            @click="deletePoem(scope.row.id,scope.$index)"
+                            @click="deleteRole(scope.row.id,scope.$index)"
                     ><i class="fa fa-trash"></i>
                     </el-button>
                 </template>
@@ -136,7 +121,7 @@
 
 <script>
     export default {
-        name: 'poemTable',
+        name: 'roleTable',
         props: ['paginate'],
         data() {
             return {
@@ -156,11 +141,11 @@
             },
             // 跳转到指定页码的页面
             handleCurrentChange(val) {
-                location.href = `http://www.dragonflyxd.com/admin/poem?page=${val}`
+                location.href = `http://www.dragonflyxd.com/admin/auth/role?page=${val}`
             },
-            // 查找诗文
+            // 查找Role
             search() {
-                axios.get(`poem/search?query=${this.query}`).then(response => {
+                axios.get(`auth/role/search?query=${this.query}`).then(response => {
                     this.getLocalData(response.data)
                 }).catch(error => {
                     this.$message({
@@ -177,33 +162,33 @@
             handleSelectionChange(val) {
                 this.multipleSelection = val
             },
-            // 创建诗文
-            createPoem() {
-                location.href = 'http://www.dragonflyxd.com/admin/poem/create'
+            // 创建Role
+            createRole() {
+                location.href = 'http://www.dragonflyxd.com/admin/auth/role/create'
             },
-            // 编辑诗文
-            editPoem(id) {
+            // 编辑Role
+            editRole(id) {
                 if (typeof id === 'number') {
-                    location.href = `http://www.dragonflyxd.com/admin/poem/${id}/edit`
+                    location.href = `http://www.dragonflyxd.com/admin/auth/role/${id}/edit`
                 } else {
                     const msLen = this.multipleSelection.length
                     if (msLen) {
-                        const poemId = this.multipleSelection[msLen - 1].id
-                        location.href = `http://www.dragonflyxd.com/admin/poem/${poemId}/edit`
+                        const roleId = this.multipleSelection[msLen - 1].id
+                        location.href = `http://www.dragonflyxd.com/admin/auth/role/${roleId}/edit`
                     } else {
                         this.$message({
-                            message: '请选择要编辑的诗文。',
+                            message: '请选择要编辑的Role。',
                             type: 'warning',
                             customClass: 'c-msg'
                         })
                     }
                 }
             },
-            // 删除多选的诗文
-            deleteMultiplePoem(){
+            // 删除多选的Role
+            deleteMultipleRole(){
                 // 若有选择
                 if (this.multipleSelection.length) {
-                    this.$confirm('此操作将永久删除选中的诗文,是否继续?', '提示', {
+                    this.$confirm('此操作将永久删除选中的Role,是否继续?', '提示', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
                         confirmButtonClass: 'btn-pub',
@@ -214,7 +199,7 @@
                         const ids = this.multipleSelection.map(item => {
                             return item.id
                         })
-                        axios.post('poem/destroy', ids).then(response => {
+                        axios.post('auth/role/destroy', ids).then(response => {
                             this.isMultipleDeleting = false
                             // 若删除成功
                             if (response.data.deleted) {
@@ -251,22 +236,22 @@
                     })
                 } else {
                     this.$message({
-                        message: '请选择要删除的诗文。',
+                        message: '请选择要删除的Role。',
                         type: 'warning',
                         customClass: 'c-msg'
                     })
                 }
             },
-            // 删除诗文
-            deletePoem(id, index) {
-                this.$confirm('此操作将永久删除该诗文,是否继续?', '提示', {
+            // 删除Role
+            deleteRole(id, index) {
+                this.$confirm('此操作将永久删除该Role,是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     confirmButtonClass: 'btn-pub',
                     cancelButtonClass: 'btn-can',
                     type: 'warning'
                 }).then(()=> {
-                    axios.delete(`poem/${id}`).then(response => {
+                    axios.delete(`auth/role/${id}`).then(response => {
                         // 若删除成功
                         if (response.data.deleted) {
                             // 删除表格数据里选中项
@@ -302,4 +287,9 @@
     }
 </script>
 
-<style lang="stylus" scoped> @import '../../../../../stylus/common.styl'; </style>
+<style lang="stylus" scoped>
+@import '../../../../../stylus/common.styl';
+
+.el-tag
+  margin-right 2px
+</style>

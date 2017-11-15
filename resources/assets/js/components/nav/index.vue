@@ -38,12 +38,6 @@
                 <i class="fa fa-cogs"></i>
                 <span slot="title">权限管理</span>
             </template>
-            <a href="/admin/auth/user">
-                <el-menu-item index="/admin/auth/user">
-                    <i class="fa fa-user"></i>
-                    <span slot="title">User</span>
-                </el-menu-item>
-            </a>
             <a href="/admin/auth/role">
                 <el-menu-item index="/admin/auth/role">
                     <i class="fa fa-user-secret"></i>

@@ -102,14 +102,14 @@ class UserController extends Controller
     }
 
     /**
-     * 改变用户的激活状态
+     * 改变用户的auth信息
      *
      * @param $user
      * @param Request $request
      * @return JsonResponse|mixed
      */
-    public function active($user, Request $request)
+    public function auth($user, Request $request)
     {
-        return $this->user->toggleUserActiveState($user, $request);
+        return $this->user->updateUserAuth($user, $request);
     }
 }

@@ -43,7 +43,7 @@
                 ></el-input>
                 <el-button
                         v-else
-                        class="show-ipt"
+                        class="btn-default"
                         @click="showIpt"
                 >添加标签
                 </el-button>

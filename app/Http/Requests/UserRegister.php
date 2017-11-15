@@ -28,6 +28,8 @@ class UserRegister extends FormRequest
             'password' => ['required', 'between:6,20', 'regex:/^[a-zA-Z0-9_-]{6,20}$/', 'confirmed'],
             'email' => ['required_without:mobile', 'max:50', 'unique:users', 'regex:/^(\w-*\.*)+@(\w-?)+(\.\w{2,})+$/'],
             'mobile' => ['sometimes', 'required', 'unique:users', 'regex:/^1\d{10}$/'],
+            'is_active' => ['nullable', 'boolean'],
+            'roles' => ['nullable', 'array'],
             'protocol' => ['accepted'],
             'is_submit' => ['required']
         ];

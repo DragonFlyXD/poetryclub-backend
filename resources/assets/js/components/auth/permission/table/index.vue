@@ -3,23 +3,23 @@
         <header class="header">
             <el-input
                     class="search c-form"
-                    placeholder="请输入诗文标题..."
+                    placeholder="请输入Permission name..."
                     icon="search"
                     v-model="query"
                     :on-icon-click="search"
                     @keyup.enter.native="search"
             ></el-input>
             <div class="actions">
-                <el-button class="add" @click="createPoem">
+                <el-button class="add" @click="createPermission">
                     <i class="fa fa-plus"></i>
                 </el-button>
-               <el-button class="edit" @click="editPoem">
+               <el-button class="edit" @click="editPermission">
                     <i class="fa fa-edit"></i>
                 </el-button>
                 <el-button
                         class="destroy"
                         :loading="isMultipleDeleting"
-                        @click="deleteMultiplePoem"
+                        @click="deleteMultiplePermission"
                 ><i class="fa fa-trash"></i>
                 </el-button>
                 <el-button class="refresh" @click="refresh">
@@ -37,18 +37,14 @@
             <el-table-column type="expand">
                 <template scope="scope">
                     <el-form>
-                        <el-form-item label="标题">
-                            <span>{{ scope.row.title }}</span>
+                        <el-form-item label="名称">
+                            <span>{{ scope.row.name }}</span>
                         </el-form-item>
-                        <el-form-item label="作者">
-                            <span>{{ scope.row.authorName }}</span>
+                        <el-form-item label="显示名">
+                            <span>{{ scope.row.display_name }}</span>
                         </el-form-item>
-                        <el-form-item label="朝代">
-                            <span>{{ scope.row.dynasty }}</span>
-                        </el-form-item>
-                        <el-form-item>
-                            <h3>内容</h3>
-                            <div v-html="scope.row.body"></div>
+                        <el-form-item label="简述">
+                            <span>{{ scope.row.description }}</span>
                         </el-form-item>
                     </el-form>
                 </template>
@@ -62,61 +58,26 @@
                     label="ID"
                     sortable
             ></el-table-column>
-            <el-table-column label="标题">
-                <template scope="scope">
-                    <a class="btn-default" :href="'/admin'+ scope.row.poemUrl">
-                        {{ scope.row.title }}
-                    </a>
-                </template>
-            </el-table-column>
             <el-table-column
-                    prop="dynasty"
-                    label="朝代"
+                    prop="name"
+                    label="名称"
             ></el-table-column>
-            <el-table-column label="是否发布">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.is_valid ? 'success' : 'danger' "
-                    >{{ scope.row.is_valid ? '已发布' : '未发布' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="是否原创">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.is_original ? 'success' : 'danger' "
-                    >{{ scope.row.is_original ? '原创' : '非原创' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="是否关闭评论">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.close_comment ? 'success' : 'danger' "
-                    >{{ scope.row.close_comment ? '已关闭' : '未关闭' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
-            <el-table-column label="是否隐藏">
-                <template scope="scope">
-                    <el-tag
-                            :type="scope.row.is_hidden ? 'success' : 'danger' "
-                    >{{ scope.row.is_hidden ? '已隐藏' : '未隐藏' }}
-                    </el-tag>
-                </template>
-            </el-table-column>
+            <el-table-column
+                    prop="display_name"
+                    label="显示名"
+            ></el-table-column>
             <el-table-column
                     label="日期"
                     prop="publish_time"
             ></el-table-column>
             <el-table-column label="操作" class-name="actions">
                 <template scope="scope">
-                    <el-button class="btn-pub" @click="editPoem(scope.row.id)">
+                    <el-button class="btn-pub" @click="editPermission(scope.row.id)">
                         <i class="fa fa-edit"></i>
                     </el-button>
                     <el-button
                             class="btn-can"
-                            @click="deletePoem(scope.row.id,scope.$index)"
+                            @click="deletePermission(scope.row.id,scope.$index)"
                     ><i class="fa fa-trash"></i>
                     </el-button>
                 </template>
@@ -136,7 +97,7 @@
 
 <script>
     export default {
-        name: 'poemTable',
+        name: 'permissionTable',
         props: ['paginate'],
         data() {
             return {
@@ -156,11 +117,11 @@
             },
             // 跳转到指定页码的页面
             handleCurrentChange(val) {
-                location.href = `http://www.dragonflyxd.com/admin/poem?page=${val}`
+                location.href = `http://www.dragonflyxd.com/admin/auth/permission?page=${val}`
             },
-            // 查找诗文
+            // 查找Permission
             search() {
-                axios.get(`poem/search?query=${this.query}`).then(response => {
+                axios.get(`auth/permission/search?query=${this.query}`).then(response => {
                     this.getLocalData(response.data)
                 }).catch(error => {
                     this.$message({
@@ -171,39 +132,39 @@
                         showClose: true
                     })
                     Promise.reject(error)
-                });
+                })
             },
             // 处理多选框数据
             handleSelectionChange(val) {
                 this.multipleSelection = val
             },
-            // 创建诗文
-            createPoem() {
-                location.href = 'http://www.dragonflyxd.com/admin/poem/create'
+            // 创建Permission
+            createPermission() {
+                location.href = 'http://www.dragonflyxd.com/admin/auth/permission/create'
             },
-            // 编辑诗文
-            editPoem(id) {
+            // 编辑Permission
+            editPermission(id) {
                 if (typeof id === 'number') {
-                    location.href = `http://www.dragonflyxd.com/admin/poem/${id}/edit`
+                    location.href = `http://www.dragonflyxd.com/admin/auth/permission/${id}/edit`
                 } else {
                     const msLen = this.multipleSelection.length
                     if (msLen) {
-                        const poemId = this.multipleSelection[msLen - 1].id
-                        location.href = `http://www.dragonflyxd.com/admin/poem/${poemId}/edit`
+                        const permissionId = this.multipleSelection[msLen - 1].id
+                        location.href = `http://www.dragonflyxd.com/admin/auth/permission/${permissionId}/edit`
                     } else {
                         this.$message({
-                            message: '请选择要编辑的诗文。',
+                            message: '请选择要编辑的Permission。',
                             type: 'warning',
                             customClass: 'c-msg'
                         })
                     }
                 }
             },
-            // 删除多选的诗文
-            deleteMultiplePoem(){
+            // 删除多选的Permission
+            deleteMultiplePermission(){
                 // 若有选择
                 if (this.multipleSelection.length) {
-                    this.$confirm('此操作将永久删除选中的诗文,是否继续?', '提示', {
+                    this.$confirm('此操作将永久删除选中的Permission,是否继续?', '提示', {
                         confirmButtonText: '确定',
                         cancelButtonText: '取消',
                         confirmButtonClass: 'btn-pub',
@@ -214,7 +175,7 @@
                         const ids = this.multipleSelection.map(item => {
                             return item.id
                         })
-                        axios.post('poem/destroy', ids).then(response => {
+                        axios.post('auth/permission/destroy', ids).then(response => {
                             this.isMultipleDeleting = false
                             // 若删除成功
                             if (response.data.deleted) {
@@ -251,22 +212,22 @@
                     })
                 } else {
                     this.$message({
-                        message: '请选择要删除的诗文。',
+                        message: '请选择要删除的Permission。',
                         type: 'warning',
                         customClass: 'c-msg'
                     })
                 }
             },
-            // 删除诗文
-            deletePoem(id, index) {
-                this.$confirm('此操作将永久删除该诗文,是否继续?', '提示', {
+            // 删除Permission
+            deletePermission(id, index) {
+                this.$confirm('此操作将永久删除该Permission,是否继续?', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     confirmButtonClass: 'btn-pub',
                     cancelButtonClass: 'btn-can',
                     type: 'warning'
                 }).then(()=> {
-                    axios.delete(`poem/${id}`).then(response => {
+                    axios.delete(`auth/permission/${id}`).then(response => {
                         // 若删除成功
                         if (response.data.deleted) {
                             // 删除表格数据里选中项

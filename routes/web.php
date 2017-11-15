@@ -30,27 +30,31 @@ Route::group(['prefix' => 'admin', 'namespace' => 'Backend\Controllers', 'middle
         Route::put('user/{user}', 'UserController@update');
         Route::get('user/{user}', 'UserController@profile');
         Route::get('user/{user}/edit', 'UserController@edit');
-        Route::post('user/{user}/active', 'UserController@active');
+        Route::put('user/{user}/auth', 'UserController@auth');
 
         // 诗文相关
-        Route::post('poem/destroy', 'PoemController@multipleDestroy');    // 多选删除
+        Route::post('poem/destroy', 'PoemController@multipleDestroy');
         Route::get('poem/search', 'PoemController@search');
         Route::resource('poem', 'PoemController');
 
         // 品鉴相关
-        Route::post('appreciation/destroy', 'AppreciationController@multipleDestroy');    // 多选删除
+        Route::post('appreciation/destroy', 'AppreciationController@multipleDestroy');
         Route::get('appreciation/search', 'AppreciationController@search');
         Route::resource('appreciation', 'AppreciationController');
 
         // 分类相关
-        Route::post('category/destroy', 'CategoryController@multipleDestroy');    // 多选删除
+        Route::post('category/destroy', 'CategoryController@multipleDestroy');
         Route::get('category/{category}/restore', 'CategoryController@restore')->where('category', '\d+');  // 恢复被软删除的分类
         Route::get('category/search', 'CategoryController@search');
         Route::resource('category', 'CategoryController');
 
         // 权限相关
-        Route::get('auth/role', 'RoleController@index');
-        Route::get('auth/permission', 'PermissionController@index');
+        Route::get('auth/role/search', 'RoleController@search');
+        Route::post('auth/role/destroy', 'RoleController@multipleDestroy');
+        Route::resource('auth/role', 'RoleController');
+        Route::get('auth/permission/search', 'PermissionController@search');
+        Route::post('auth/permission/destroy', 'PermissionController@multipleDestroy');
+        Route::resource('auth/permission', 'PermissionController');
 
         // 退出登录
         Route::get('logout', 'HomeController@logout');

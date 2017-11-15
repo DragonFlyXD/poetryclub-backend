@@ -376,19 +376,19 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
      */
     public function transformUser($user, $other = false)
     {
-        $user = collection($user);
-        $user = $user->except('confirmation_token');
-
+        $user = collection($user)->except('confirmation_token');
         $profile = collection($user->get('profile'))->except('id', 'user_id', 'nickname', 'created_at', 'updated_at');
-        if ($profile->get('gender')) {  // 若设置了性别,格式化 gender
+
+        // 若设置了性别,格式化gender
+        if ($profile->get('gender')) {
             $profile['gender'] = $profile['gender'] === 1 ? '男' : '女';
         } else {
             $profile['gender'] = '';
         }
 
-        // 设置 profile 地址链接
+        // 格式化该用户的创建时间、ProfileUrl、昵称
+        $user['publish_time'] = $this->transformTime($user['created_at']);
         $user['profileUrl'] = '/user/' . $user['name'];
-        // 设置昵称
         $user['nickname'] = $this->getNickname($user);
 
         return $other
@@ -413,7 +413,7 @@ abstract class Repository implements RepositoryInterface, ApiRepositoryInterface
             // 格式化评论的发布时间
             $comment['publish_time'] = $this->transformTime($comment['created_at']);
 
-            // 设置 profile 地址链接与用户昵称
+            // 设置profile地址链接与用户昵称
             $user['profileUrl'] = '/user/' . $comment['user']['name'];
             $user['avatar'] = $comment['user']['avatar'];
             $user['nickname'] = $this->getNickname($comment['user']);

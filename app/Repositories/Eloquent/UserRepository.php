@@ -4,7 +4,6 @@ namespace App\Repositories\Eloquent;
 
 use App\Mail\PasswordShipped;
 use App\Mail\RegisterShipped;
-use Carbon\Carbon;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Container\Container as App;
@@ -56,17 +55,14 @@ class UserRepository extends Repository
         if (!$query) {
             $paginate = $this->model
                 ->orderBy('created_at', 'desc')
-                ->paginate(10)
-                ->toArray();
+                ->paginate();
 
-            $paginate['data'] = collection($paginate['data'])
-                ->map(function ($item) {
-                    $user = $this->transformUser($this->with('profile')->find($item['id']));
-                    $user['publish_time'] = $this->transformTime($user['created_at']);
-                    return $user;
-                });
+            foreach ($paginate as $key => $value) {
+                $user = collection($value)->merge(['profile' => $value['profile'], 'roles' => $value['roles']]);
+                $paginate[$key] = $this->transformUser($user);
+            }
         } else {
-            // 获取待查询用户ID集合
+            // 获取模糊查询用户的Profile集合
             $users = (new \App\Http\Frontend\Models\Profile())
                 ->where('nickname', 'like', "%$query%")
                 ->get();
@@ -75,18 +71,15 @@ class UserRepository extends Repository
             $paginate = $this->model
                 ->whereIn('id', $users->pluck('user_id'))
                 ->orderBy('created_at', 'desc')
-                ->paginate(10)
-                ->toArray();
+                ->paginate();
 
-            $paginate['data'] = collection($paginate['data'])
-                ->map(function ($item, $index) use ($users) {
-                    $user = $this->transformUser(collection($item)->merge(['profile' => $users[$index]]));
-                    $user['publish_time'] = $this->transformTime($user['created_at']);
-                    return $user;
-                });
+            foreach ($paginate as $key => $value) {
+                $user = collection($value)->merge(['profile' => $value[$key], 'roles' => $value['roles']]);
+                $paginate[$key] = $this->transformUser($user);
+            }
         }
 
-        return $paginate;
+        return collection($paginate);
     }
 
     /**
@@ -97,13 +90,11 @@ class UserRepository extends Repository
      */
     public function edit($user)
     {
-        $user = $this->model->with('profile')->where('name', $user)->first();
+        $user = $this->model->with(['profile', 'roles'])->where('name', $user)->first();
         if (!$user) {
             return $this->errorNotFound();
         } else {
-            $user = $this->transformUser($user);
-            $user['publish_time'] = $this->transformTime($user['created_at']);
-            return $user;
+            return $this->transformUser($user);
         }
     }
 
@@ -129,14 +120,20 @@ class UserRepository extends Repository
         if ($user && !$isBackend) {
             Mail::to($user)
                 ->send(new RegisterShipped($user));
-        } else if ($isBackend) {
+        } else if ($user && $isBackend) {
+            // 若存在Roles
+            if ($roles = $request['roles']) {
+                $user->attachRoles($roles);
+            }
+
             // 若为后台添加用户, 激活新注册的用户并初始化个人信息
-            $user->is_active = 1;
+            $user->is_active = $request->is_active;
             $user->save();
             (new \App\Http\Frontend\Models\Profile())->create([
                 'user_id' => $user->id,
                 'nickname' => $user->name
             ]);
+
         }
 
         return $this->respondWith(['registered' => !!$user]);
@@ -149,15 +146,19 @@ class UserRepository extends Repository
      * @param $request
      * @return \Illuminate\Http\JsonResponse|mixed
      */
-    public function toggleUserActiveState($user, $request)
+    public function updateUserAuth($user, $request)
     {
         $user = $this->findBy('name', $user);
-        if ($user) {
-            $user->is_active = $request->is_active === 0 ? 1 : 0;
-            $result = $user->save();
-            return $this->respondWith(['active' => $result, 'status' => $user->is_active]);
+        if ($result = !!$user) {
+            // 更新用户的激活状态
+            $user->is_active = $request->is_active ? 1 : 0;
+            $user->save();
+            // 更新的用户的Roles
+            if ($roles = $request->roles) {
+                $user->roles()->sync($roles);
+            }
         }
-        return $this->respondWith(['active' => false]);
+        return $this->respondWith(['updated' => $result]);
     }
 
     /**

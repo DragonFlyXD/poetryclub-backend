@@ -39,6 +39,12 @@ import UserTable from './components/user/table'
 import CreateUser from './components/user/create'
 import EditUser from './components/user/edit'
 
+// 权限相关
+import RoleTable from './components/auth/role/table'
+import RoleForm from './components/auth/role/form'
+import PermissionTable from './components/auth/permission/table'
+import PermissionForm from './components/auth/permission/form'
+
 // 杂项
 import Dot from './components/misc/dot'  // 粒子动画
 import CountTo from './components/misc/countTo'  // 自动增长
@@ -56,6 +62,10 @@ new Vue({
         UserTable,
         CreateUser,
         EditUser,
+        RoleTable,
+        RoleForm,
+        PermissionTable,
+        PermissionForm,
         Dot,
         CountTo
     }

@@ -19,7 +19,7 @@ return [
     | the role if it is in a different namespace.
     |
     */
-    'role' => 'App\Http\Backend\Models\Role',
+    'role' => 'App\Http\Frontend\Models\Role',
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +62,7 @@ return [
     | Update the permission if it is in a different namespace.
     |
     */
-    'permission' => 'App\Http\Backend\Models\Permission',
+    'permission' => 'App\Http\Frontend\Models\Permission',
 
     /*
     |--------------------------------------------------------------------------

@@ -71,10 +71,44 @@
                     </a>
                 </template>
             </el-table-column>
-            <el-table-column
-                    prop="email"
-                    label="邮箱"
-            ></el-table-column>
+            <el-table-column label="用户名">
+                <template scope="scope">
+                    <a class="btn-default" :href="'/admin'+ scope.row.profileUrl">
+                        {{ scope.row.name }}
+                    </a>
+                </template>
+            </el-table-column>
+            <el-table-column label="Roles">
+                <template scope="scope">
+                    <template v-if="scope.row.roles.length > 0">
+                        <el-tag
+                                type="info"
+                                v-for="(role, index) in scope.row.roles"
+                                :key="index"
+                        >{{ role.name }}
+                        </el-tag>
+                    </template>
+                    <el-tag type="danger" v-else>NULL</el-tag>
+                </template>
+            </el-table-column>
+            <el-table-column label="邮箱">
+                <template scope="scope">
+                    {{ scope.row.email ? scope.row.email : 'NULL' }}
+                </template>
+            </el-table-column>
+            <el-table-column label="登录方式">
+                <template scope="scope">
+                    <template v-if="scope.row.social_type">
+                        <template v-if="scope.row.social_type === 'weibo'">
+                            <i class="fa fa-weibo"></i> 微博
+                        </template>
+                        <template v-else>
+                            <i class="fa fa-github"></i> GitHub
+                        </template>
+                    </template>
+                    <template v-else><i class="fa fa-envelope-o"></i> {{ 'Email' }}</template>
+                </template>
+            </el-table-column>
             <el-table-column label="激活状态">
                 <template scope="scope">
                     <el-tag
@@ -91,11 +125,6 @@
                 <template scope="scope">
                     <el-button class="btn-pub" @click="editUser(scope.$index)">
                         <i class="fa fa-edit"></i>
-                    </el-button>
-                    <el-button
-                            class="btn-can"
-                            @click="activeUser(scope.row.name,scope.row.is_active,scope.$index)"
-                    ><i class="fa fa-rotate-left"></i>
                     </el-button>
                 </template>
             </el-table-column>
@@ -177,43 +206,6 @@
                     }
                 }
             },
-            // 该表用户的激活状态
-            activeUser(name, active, index) {
-                this.$confirm('此操作将该表选中的用户的激活状态,是否继续?', '提示', {
-                    confirmButtonText: '确定',
-                    cancelButtonText: '取消',
-                    confirmButtonClass: 'btn-pub',
-                    cancelButtonClass: 'btn-can',
-                    type: 'warning'
-                }).then(()=> {
-                    axios.post(`user/${name}/active`, {is_active: active}).then(response => {
-                        // 操作成功
-                        if (response.data.active) {
-                            this.localData.data[index].is_active = response.data.status
-                            this.$message({
-                                message: '操作成功。',
-                                type: 'success',
-                                customClass: 'c-msg'
-                            })
-                        } else {
-                            this.$message({
-                                message: '操作失败。',
-                                type: 'error',
-                                customClass: 'c-msg'
-                            })
-                        }
-                    }).catch(error => {
-                        this.$message({
-                            message: '旅行者，诗词小筑出了点状况，您可以稍后再来光顾，拜托啦/(ㄒoㄒ)/~~',
-                            type: 'error',
-                            customClass: 'c-msg',
-                            duration: 0,
-                            showClose: true
-                        })
-                        Promise.reject(error)
-                    })
-                })
-            },
             refresh() {
                 location.reload();
             }
@@ -221,4 +213,9 @@
     }
 </script>
 
-<style lang="stylus" scoped> @import '../../../../stylus/common.styl'; </style>
+<style lang="stylus" scoped>
+@import '../../../../stylus/common.styl';
+
+.el-tag
+    margin-right 2px
+</style>

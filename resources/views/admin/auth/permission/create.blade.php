@@ -3,11 +3,11 @@
 @section('breadcrumb')
     <el-breadcrumb-item>
         <a class="custom-a" href="{{ url()->current() }}">
-            <i class="fa fa-user-secret"></i>Role
+            <i class="fa fa-plus"></i>创建Permission
         </a>
     </el-breadcrumb-item>
 @endsection
 
 @section('content')
-    <role-table paginate="{{ $roles }}"></role-table>
+    <permission-form></permission-form>
 @endsection

@@ -9,4 +9,5 @@
 @endsection
 
 @section('content')
+    <permission-table paginate="{{ $permissions }}"></permission-table>
 @endsection

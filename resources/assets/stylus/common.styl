@@ -83,7 +83,7 @@
   .el-form-item__label
     &::before
       content '' !important
-  .is-checked
+  .is-checked,.is-indeterminate
     span
       border-color Green !important
       background-color Green !important
@@ -236,6 +236,14 @@
       background-color Green
   a
     text-decoration none
+
+/* 穿梭框 */
+.el-transfer
+  button:not(.is-disabled)
+    border-color Green !important
+    bc(Green !important, White !important)
+    &:hover
+      background-color Green !important
 
 /* ------------    ~~~   -------------- */
 

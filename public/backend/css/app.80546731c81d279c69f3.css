@@ -446,7 +446,8 @@
 .c-form .el-form-item__label::before {
   content: '' !important;
 }
-.c-form .is-checked span {
+.c-form .is-checked span,
+.c-form .is-indeterminate span {
   border-color: #42b983 !important;
   background-color: #42b983 !important;
   transition: all 0.3s ease;
@@ -612,6 +613,14 @@
 }
 .el-dropdown-menu a {
   text-decoration: none;
+}
+.el-transfer button:not(.is-disabled) {
+  border-color: #42b983 !important;
+  color: #fff !important;
+  background-color: #42b983 !important;
+}
+.el-transfer button:not(.is-disabled):hover {
+  background-color: #42b983 !important;
 }
 .c-table .header {
   display: -webkit-box;

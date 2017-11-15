@@ -42,7 +42,9 @@ class AppreciationRepository extends Repository
         // 获取分页数据
         if (!$query) {
             $paginate = $this->model
-                ->orderBy('created_at', 'desc')->paginate(10)->toArray();
+                ->orderBy('created_at', 'desc')
+                ->paginate(10)
+                ->toArray();
         } else {
             // 若有查询参数
             $paginate = $this->model
