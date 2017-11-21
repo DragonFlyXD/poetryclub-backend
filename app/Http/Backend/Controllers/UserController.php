@@ -86,7 +86,8 @@ class UserController extends Controller
      */
     public function profile()
     {
-        return view('admin.user.profile', ["user" => user('web')]);
+        $user = $this->user->findBy('name', request()->route('user'));
+        return view('admin.user.profile', ["user" => $user]);
     }
 
     /**
