@@ -23,7 +23,7 @@ class CreateUsersTable extends Migration
             $table->char('confirmation_token', 40)->comment('邮箱token');
             $table->boolean('is_active')->default(0)->comment('激活状态');
 //            $table->nullableMorphs('social');
-            $table->unsignedBigInteger('social_id', 10)->nullable()->comment('第三方账号ID');
+            $table->unsignedBigInteger('social_id')->nullable()->comment('第三方账号ID');
             $table->string('social_type')->nullable()->comment('第三方登录类型');
             $table->unsignedTinyInteger('role_level')->default(1)->comment('角色等级');
             $table->unsignedInteger('works_count')->default(0)->comment('作品总数');
